@@ -1,0 +1,17 @@
+Instructions are for windows.
+
+1. Open command prompt with admin privilages.
+2. cd to this folder
+3. run: "python get-pip.py". This will install pip: a package manager for python.
+4. You have successfully installed pip.
+
+Installing nose:
+1. Open command prompt
+2. run: "python -m pip install nose
+3. Nose is successfully installed.
+
+Installing BitVector
+1. Open command prompt
+2. cd to 'BitVector-3.3.2' folder
+3. run: "python setup.py install"
+4. Done
