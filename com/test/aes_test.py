@@ -7,7 +7,7 @@ import BitVector
 def newBV(val):
     if type(val) is str:
         return BitVector.BitVector(bitstring = val)
-    elif type(val) is int
+    elif type(val) is int:
         return BitVector.BitVector(intVal = val)
     return None
 
