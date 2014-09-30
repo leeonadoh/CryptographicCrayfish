@@ -147,7 +147,11 @@ def sbox_lookup(input):
     ''' Given an 8-bit BitVector input, look up the sbox value corresponding
         to that byte value, returning the sbox value as an 8-bit BitVector.  '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20  
-    pass
+    row = int(input[0:4])
+    col = int(input[4:7])
+    print(row)
+    print(col)
+    return sbox[row][col] 
 
 def inv_sbox_lookup(input):
     ''' Given an 8-bit BitVector input, look up the sboxinv value corresponding
