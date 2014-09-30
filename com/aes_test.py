@@ -1,6 +1,6 @@
 #!/usr/bin/python #
 
-import com.src.aes as AES
+import aes as AES
 import BitVector
 
 #Some helper functions
