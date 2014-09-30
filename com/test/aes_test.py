@@ -23,21 +23,28 @@ exp3 = newBV(0x91)
 exp4 = newBV(0x5e)
 
 # State array.
-sa = [[newBV(0x00), newBV(0x12), newBV(0x23), newBV(0xa5)],\
-      [newBV(0xad), newBV(0xc4), newBV(0xbb), newBV(0xff)],\
-      [newBV(0xbc), newBV(0x34), newBV(0xaf), newBV(0xd3)],\
-      [newBV(0x98), newBV(0x7d), newBV(0x52), newBV(0x26)]]
+sa = [[newBV(0x19), newBV(0x3d), newBV(0xe3), newBV(0xbe)],\
+      [newBV(0xa0), newBV(0xf4), newBV(0xe2), newBV(0x2b)],\
+      [newBV(0x9a), newBV(0xc6), newBV(0x8d), newBV(0x2a)],\
+      [newBV(0xe9), newBV(0xf8), newBV(0x48), newBV(0x08)]]
 
 # S-box substituted state array. 
-subbedSA = [[newBV(0x63), newBV(0xc9), newBV(0x26), newBV(0x06)],\
-      [newBV(0x95), newBV(0x1c), newBV(0xea), newBV(0x16)],\
-      [newBV(0x65), newBV(0x18), newBV(0x79), newBV(0x66)],\
-      [newBV(0x46), newBV(0xff), newBV(0x00), newBV(0xf7)]]
+subbedSA = [[newBV(0xd4), newBV(0x27), newBV(0x11), newBV(0xae)],\
+      [newBV(0xe0), newBV(0xbf), newBV(0x98), newBV(0xf1)],\
+      [newBV(0xb8), newBV(0xb4), newBV(0x5d), newBV(0xe5)],\
+      [newBV(0x1e), newBV(0x41), newBV(0x52), newBV(0x30)]]
 
-shiftedSA = [[newBV(0x00), newBV(0xc4), newBV(0xaf), newBV(0xd3)],\
-      [newBV(0xad), newBV(0x34), newBV(0x52), newBV(0x26)],\
-      [newBV(0xbc), newBV(0x7d), newBV(0x23), newBV(0xa5)],\
-      [newBV(0x98), newBV(0x12), newBV(0xbb), newBV(0xff)]]
+# Row shifted version of subbedSA
+shiftedSA = [[newBV(0xd4), newBV(0xbf), newBV(0x5d), newBV(0x30)],\
+      [newBV(0xe0), newBV(0xb4), newBV(0x52), newBV(0xae)],\
+      [newBV(0xb8), newBV(0x41), newBV(0x11), newBV(0xf1)],\
+      [newBV(0x1e), newBV(0x27), newBV(0x98), newBV(0xe5)]]
+
+# Mix column-ed 
+mixColSA = [[newBV(0x04), newBV(0x66), newBV(0x81), newBV(0xe5)],\
+      [newBV(0xe0), newBV(0xcb), newBV(0x19), newBV(0x9a)],\
+      [newBV(0x48), newBV(0xf8), newBV(0xd3), newBV(0x7a)],\
+      [newBV(0x28), newBV(0x06), newBV(0x26), newBV(0x4c)]]
 
 def test_sub_key_bytes():
     ''' Iterate through round-key key_word (4-byte word) performing sbox
@@ -103,7 +110,7 @@ def test_shift_bytes_left():
         by num bytes'''
     bitVector = newBV(0xff00)
     expect = newBV(0x00ff)
-    actual = AES.shift_bytes_left(bitVector)
+    actual = AES.shift_bytes_left(bitVector, 1)
     assert actual == expect
 
 def test_shift_bytes_right():
@@ -111,18 +118,18 @@ def test_shift_bytes_right():
         by num bytes'''
     bitVector = newBV(0x00ff)
     expect = newBV(0xff00)
-    actual = AES.shift_bytes_right(BitVector)
+    actual = AES.shift_bytes_right(BitVector, 1)
     assert actual == expect
 
 def test_shift_rows():
     ''' shift rows in state array sa to return new state array '''
-    actual = AES.shift_rows(sa)
+    actual = AES.shift_rows(subbedSA)
     assert actual == shiftedSA
 
 def test_inv_shift_rows():
     ''' shift rows on state array sa to return new state array '''
-    actaul = AES.inv_shift_rows(shiftedSA)
-    assert sa == actual
+    actual = AES.inv_shift_rows(shiftedSA)
+    assert subbedSA == actual
 
 def test_gf_mult():
     ''' Used by mix_columns and inv_mix_columns to perform multiplication in
@@ -137,7 +144,12 @@ def test_gf_mult():
 def test_mix_columns():
     ''' Mix columns on state array sa to return new state array '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 33-35   
-    assert False
+    expect = [[newBV(0x04), newBV(0x66), newBV(0x81), newBV(0xe5)],\
+      [newBV(0xe0), newBV(0xcb), newBV(0x19), newBV(0x9a)],\
+      [newBV(0x48), newBV(0xf8), newBV(0xd3), newBV(0x7a)],\
+      [newBV(0x28), newBV(0x06), newBV(0x26), newBV(0x4c)]]
+    actual = mix_columns(subbedSA)
+    assert expect == actual
 
 def test_inv_mix_columns():
     ''' Inverse mix columns on state array sa to return new state array '''
