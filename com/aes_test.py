@@ -6,9 +6,9 @@ import BitVector
 #Some helper functions
 def newBV(val):
     if type(val) is str:
-        return BitVector.BitVector(bitstring = val)
+        return BitVector.BitVector(bitstring = val, size = 8)
     elif type(val) is int:
-        return BitVector.BitVector(intVal = val)
+        return BitVector.BitVector(intVal = val, size = 8)
     return None
 
 #Define a few values.
@@ -40,7 +40,7 @@ shiftedSA = [[newBV(0xd4), newBV(0xbf), newBV(0x5d), newBV(0x30)],\
       [newBV(0xb8), newBV(0x41), newBV(0x11), newBV(0xf1)],\
       [newBV(0x1e), newBV(0x27), newBV(0x98), newBV(0xe5)]]
 
-# Mix column-ed 
+# Mix column-ed version of subbedSA
 mixColSA = [[newBV(0x04), newBV(0x66), newBV(0x81), newBV(0xe5)],\
       [newBV(0xe0), newBV(0xcb), newBV(0x19), newBV(0x9a)],\
       [newBV(0x48), newBV(0xf8), newBV(0xd3), newBV(0x7a)],\
@@ -144,17 +144,14 @@ def test_gf_mult():
 def test_mix_columns():
     ''' Mix columns on state array sa to return new state array '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 33-35   
-    expect = [[newBV(0x04), newBV(0x66), newBV(0x81), newBV(0xe5)],\
-      [newBV(0xe0), newBV(0xcb), newBV(0x19), newBV(0x9a)],\
-      [newBV(0x48), newBV(0xf8), newBV(0xd3), newBV(0x7a)],\
-      [newBV(0x28), newBV(0x06), newBV(0x26), newBV(0x4c)]]
     actual = mix_columns(subbedSA)
-    assert expect == actual
+    assert mixColSA == actual
 
 def test_inv_mix_columns():
     ''' Inverse mix columns on state array sa to return new state array '''
     # ADD YOUR CODE HERE - SEE LEC SLIDE 36  
-    assert False
+    actual = inv_mix_columns(mixColSA)
+    assert subbedSA == mixColSA
   
 def test_encrypt():
     ''' perform AES encryption using 128-bit hex_key on 128-bit plaintext 
