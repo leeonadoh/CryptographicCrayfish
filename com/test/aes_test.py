@@ -1,6 +1,6 @@
 #!/usr/bin/python #
 
-import com.src.aes.*
+import com.src.aes as AES
 import BitVector
 
 #Some helper functions
@@ -21,21 +21,23 @@ exp1 = newBV(0x63)
 exp2 = newBV(0x16)
 exp3 = newBV(0x91)
 exp4 = newBV(0x5e)
+
 # State array.
 sa = [[newBV(0x00), newBV(0x12), newBV(0x23), newBV(0xa5)],\
       [newBV(0xad), newBV(0xc4), newBV(0xbb), newBV(0xff)],\
       [newBV(0xbc), newBV(0x34), newBV(0xaf), newBV(0xd3)],\
       [newBV(0x98), newBV(0x7d), newBV(0x52), newBV(0x26)]]
+
 # S-box substituted state array. 
 subbedSA = [[newBV(0x63), newBV(0xc9), newBV(0x26), newBV(0x06)],\
       [newBV(0x95), newBV(0x1c), newBV(0xea), newBV(0x16)],\
       [newBV(0x65), newBV(0x18), newBV(0x79), newBV(0x66)],\
       [newBV(0x46), newBV(0xff), newBV(0x00), newBV(0xf7)]]
 
-shiftedSA = [[newBV(0x00), newBV(0x12), newBV(0x23), newBV(0xa5)],\
-      [newBV(0xc4), newBV(0xbb), newBV(0xff), newBV(0xad)],\
-      [newBV(0xaf), newBV(0xd3), newBV(0xbc), newBV(0x34)],\
-      [newBV(0x26), newBV(0x98), newBV(0x7d), newBV(0x52)]]
+shiftedSA = [[newBV(0x00), newBV(0xc4), newBV(0xaf), newBV(0xd3)],\
+      [newBV(0xad), newBV(0x34), newBV(0x52), newBV(0x26)],\
+      [newBV(0xbc), newBV(0x7d), newBV(0x23), newBV(0xa5)],\
+      [newBV(0x98), newBV(0x12), newBV(0xbb), newBV(0xff)]]
 
 def test_sub_key_bytes():
     ''' Iterate through round-key key_word (4-byte word) performing sbox
@@ -43,7 +45,7 @@ def test_sub_key_bytes():
     # To sub root word on 4th step.
     keyVal = [val1, val2, val3, val4]
     expect = [exp1, exp2, exp3, exp4]
-    actual = sub_key_bytes(keyVal)
+    actual = AES.sub_key_bytes(keyVal)
     assert actual == expect
 
 def test_init_key_schedule():
@@ -61,10 +63,10 @@ def test_add_round_key():
 def test_sbox_lookup():
     ''' Given an 8-bit BitVector input, look up the sbox value corresponding
         to that byte value, returning the sbox value as an 8-bit BitVector.  '''
-    act1 = sbox_lookup(val1)
-    act2 = sbox_lookup(val2)
-    act3 = sbox_lookup(val3)
-    act4 = sbox_lookup(val4)
+    act1 = AES.sbox_lookup(val1)
+    act2 = AES.sbox_lookup(val2)
+    act3 = AES.sbox_lookup(val3)
+    act4 = AES.sbox_lookup(val4)
     
     assert act1 == exp1
     assert act2 == exp2
@@ -74,10 +76,10 @@ def test_sbox_lookup():
 def test_inv_sbox_lookup():
     ''' Given an 8-bit BitVector input, look up the sboxinv value corresponding
         to that byte, returning the sboxinv value as an 8-bit BitVector. '''
-    act1 = inv_sbox_lookup(exp1)
-    act2 = inv_sbox_lookup(exp2)
-    act3 = inv_sbox_lookup(exp3)
-    act4 = inv_sbox_lookup(exp4)
+    act1 = AES.inv_sbox_lookup(exp1)
+    act2 = AES.inv_sbox_lookup(exp2)
+    act3 = AES.inv_sbox_lookup(exp3)
+    act4 = AES.inv_sbox_lookup(exp4)
 
     assert act1 == val1
     assert act2 == val2
@@ -87,13 +89,13 @@ def test_inv_sbox_lookup():
 def test_sub_bytes():
     ''' Iterate throught state array sa to perform sbox substitution 
     returning new state array. '''
-    actual = sub_bytes(sa)
+    actual = AES.sub_bytes(sa)
     assert subbedSA == actual
 
 def test_inv_sub_bytes():
     ''' Iterate throught state array sa to perform inv-sbox substitution 
     returning new state array. '''
-    actual = inv_sub_bytes(subbedSA)
+    actual = AES.inv_sub_bytes(subbedSA)
     assert sa == actual # Python does nested equality on lists.
 
 def test_shift_bytes_left():
@@ -101,7 +103,7 @@ def test_shift_bytes_left():
         by num bytes'''
     bitVector = newBV(0xff00)
     expect = newBV(0x00ff)
-    actual = shift_bytes_left(bitVector)
+    actual = AES.shift_bytes_left(bitVector)
     assert actual == expect
 
 def test_shift_bytes_right():
@@ -109,17 +111,17 @@ def test_shift_bytes_right():
         by num bytes'''
     bitVector = newBV(0x00ff)
     expect = newBV(0xff00)
-    actual = shift_bytes_right(BitVector)
+    actual = AES.shift_bytes_right(BitVector)
     assert actual == expect
 
 def test_shift_rows():
     ''' shift rows in state array sa to return new state array '''
-    actual = shift_rows(sa)
+    actual = AES.shift_rows(sa)
     assert actual == shiftedSA
 
 def test_inv_shift_rows():
     ''' shift rows on state array sa to return new state array '''
-    actaul = inv_shift_rows(shiftedSA)
+    actaul = AES.inv_shift_rows(shiftedSA)
     assert sa == actual
 
 def test_gf_mult():
@@ -129,7 +131,7 @@ def test_gf_mult():
     bitVector = newBV(0x87)
     factor = 0x02
     expected = newBV(0x15)
-    actual = gf_mult(bitVector, factor)
+    actual = AES.gf_mult(bitVector, factor)
     assert expected == actual
 
 def test_mix_columns():
