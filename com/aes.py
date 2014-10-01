@@ -108,6 +108,10 @@ def key_bv(hex_key):
         key_bv += byte_bv # catenate new BitVector byte onto return value
     return key_bv
 
+def int_hex(i):
+    ''' HELPER to convert an int into a hex-string representation of a key '''
+    return "%02x" % i 
+
 ''' END of HELPER functions '''
 
 
@@ -129,41 +133,76 @@ def sub_key_bytes(key_word):
     ''' Iterate through round-key key_word (4-byte word) performing sbox
         substitutions, returning the transformed round-key key_word '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 44-47  
-    pass
+
+    for i in range(len(key_word)):
+	key_word[i] = sbox_lookup(key_word[i])
+    return key_word
+    
 
 def init_key_schedule(key_bv):
     '''key_bv is the 128-bit input key value represented as a BitVector; return
        key_schedule as an array of (4*(1+#rounds)) 32-bit BitVector words '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 44-47  
-    pass
+    # ADD YOUR CODE HERE - SEE LEC SLIDES 44-47
+    
+    key_schedule = [key_bv[0:32], key_bv[32:64], key_bv[64:96], key_bv[96:128]]
+
+    #TODO FIGURE THIS OUT
+    
+    # accumulator for round-key
+    round_key = [] 
+    for r in range(rounds):
+	#word0 = round_key[]
+	#round_key.append([word0, word1, word2, word3])
+        #round_key.append(...)  # add generated round-key word to accumulator
+	#... compute word1 - word3 ..
+        #gen_func = word3       # initialize input to g()
+        #gen_func = ... do byte rotation ...
+        #gen_func = ... do s-box substitution ...
+	#... XOR round rcon value with gen_func value ...
+	#... perform word-XOR's for this round ...
+        #... attach round words to the key_bv
+	do_something = "but do what?"
+	
+    return key_schedule
 
 def add_round_key(sa, rk):
     ''' XOR state array sa with roundkey rk to return new state array.
         param sa is a 4x4 state array, param rk is a 4-word round key '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 40-42  
-    pass
+    
+    #TODO: MAKE THIS WORK
+    new_sa = []  # new output state
+    #for i in range(...):  # iterate columns
+    #    col = []   # new column
+    #    for j in range(...):   # iterate rows
+    #        some_val = ... XOR bits from state-array byte and round-key byte
+    #        col.append(...)  # insert XOR result into col
+    #    new_sa.append(...)  # insert new col into result state_array
+    #return ... as spec'd in doc-string ...
 
 def sbox_lookup(input):
     ''' Given an 8-bit BitVector input, look up the sbox value corresponding
         to that byte value, returning the sbox value as an 8-bit BitVector.  '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20  
     row = int(input[0:4])
-    col = int(input[4:7])
-    print(row)
-    print(col)
-    return sbox[row][col] 
+    col = int(input[4:8])
+    return key_bv(int_hex(sbox[row][col])) # convert to BitVector 
 
 def inv_sbox_lookup(input):
     ''' Given an 8-bit BitVector input, look up the sboxinv value corresponding
         to that byte, returning the sboxinv value as an 8-bit BitVector. '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20   
-    pass
+    row = int(input[0:4])
+    col = int(input[4:8])
+    return key_bv(int_hex(sboxinv[row][col])) # convert to BitVector 
 
 def sub_bytes(sa):
     ''' Iterate throught state array sa to perform sbox substitution 
 	returning new state array. '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20   
-    pass
+    for i in range(len(sa)):
+	for j in range(len(sa[0])):
+	    pass
 
 def inv_sub_bytes(sa):
     ''' Iterate throught state array sa to perform inv-sbox substitution 
@@ -223,3 +262,16 @@ def decrypt(hex_key, hex_ciphertext):
 	in hexadecimal string notation. '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 14-15
     pass
+
+
+if __name__ == "__main__":
+    # test key from AES-Spec Appendix B
+    NIST_test_key = '2b7e151628aed2a6abf7158809cf4f3c'
+    
+    # plaintext test-value from AES-Spec Appendix B 
+    NIST_test_plaintext = '3243f6a8885a308d313198a2e0370734'
+    
+    # input-to-round-1 value from AES-Spec Appendix B 
+    NIST_input_round_1 = '193de3bea0f4e22b9ac68d2ae9f84808'
+    x = key_bv(NIST_test_key)
+    key_schedule = init_key_schedule(x)    
