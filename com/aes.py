@@ -98,7 +98,7 @@ def key_str(round_key):
     	kstr += bv_hex_str(word)
     return kstr
 
-def key_bv(hex_key):
+def key_to_bv(hex_key):
     ''' HELPER to convert a hex-string representation of a key to the
         equivalent BitVector value '''
     keybytes = binascii.a2b_hex(hex_key)  # hex string to byte string
@@ -146,23 +146,27 @@ def init_key_schedule(key_bv):
     
     key_schedule = [key_bv[0:32], key_bv[32:64], key_bv[64:96], key_bv[96:128]]
 
-    #TODO FIGURE THIS OUT
-    
-    # accumulator for round-key
-    round_key = [] 
     for r in range(rounds):
-	#word0 = round_key[]
-	#round_key.append([word0, word1, word2, word3])
-        #round_key.append(...)  # add generated round-key word to accumulator
-	#... compute word1 - word3 ..
-        #gen_func = word3       # initialize input to g()
-        #gen_func = ... do byte rotation ...
-        #gen_func = ... do s-box substitution ...
-	#... XOR round rcon value with gen_func value ...
-	#... perform word-XOR's for this round ...
-        #... attach round words to the key_bv
-	do_something = "but do what?"
+	# compute word4
+	word4 = key_schedule[-1]
+	word4 = shift_bytes_left(word4, 1) # RotWord by 1 byte
+
+	# Sub bytes
+	round_key = [word4[0:8], word4[8:16], word4[16:24], word4[24:32]]
+	round_key = sub_key_bytes(round_key) 
+	word4 = key_to_bv(key_str(round_key))
 	
+	# XOR 4th previous and rcon
+	word4 = key_schedule[-4] ^ word4 
+	print key_to_bv(int_hex(rcon[r + 1])).shift_right(24)
+	print "LOL"
+	word4 = word4 ^ key_to_bv(int_hex(rcon[r + 1])).shift_right(24)
+	key_schedule.append(word4)
+	
+	# compute word5 to word7 and add to round-key
+	for i in range(3):
+	    key_schedule.append(key_schedule[-1] ^ key_schedule[-4])
+	    
     return key_schedule
 
 def add_round_key(sa, rk):
@@ -186,7 +190,7 @@ def sbox_lookup(input):
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20  
     row = int(input[0:4])
     col = int(input[4:8])
-    return key_bv(int_hex(sbox[row][col])) # convert to BitVector 
+    return key_to_bv(int_hex(sbox[row][col])) # convert to BitVector 
 
 def inv_sbox_lookup(input):
     ''' Given an 8-bit BitVector input, look up the sboxinv value corresponding
@@ -194,7 +198,7 @@ def inv_sbox_lookup(input):
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20   
     row = int(input[0:4])
     col = int(input[4:8])
-    return key_bv(int_hex(sboxinv[row][col])) # convert to BitVector 
+    return key_to_bv(int_hex(sboxinv[row][col])) # convert to BitVector 
 
 def sub_bytes(sa):
     ''' Iterate throught state array sa to perform sbox substitution 
@@ -202,25 +206,31 @@ def sub_bytes(sa):
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20   
     for i in range(len(sa)):
 	for j in range(len(sa[0])):
-	    pass
+	    sa[i][j] = sbox_lookup(sa[i][j])
+    return sa
 
 def inv_sub_bytes(sa):
     ''' Iterate throught state array sa to perform inv-sbox substitution 
 	returning new state array. '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20   
-    pass
+    for i in range(len(sa)):
+	for j in range(len(sa[0])):
+	    sa[i][j] = inv_sbox_lookup(sa[i][j])
+    return sa
 
 def shift_bytes_left(bv, num):
     ''' Return the value of BitVector bv after rotating it to the left
         by num bytes'''
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32   
-    pass
+    # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32
+    cp = bv.deep_copy()
+    return cp.__lshift__(8 * num)
 
 def shift_bytes_right(bv, num):
     ''' Return the value of BitVector bv after rotating it to the right
         by num bytes'''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32  
-    pass
+    cp = bv.deep_copy()
+    return cp.__rshift__(8 * num)
 
 def shift_rows(sa):
     ''' shift rows in state array sa to return new state array '''
@@ -273,5 +283,5 @@ if __name__ == "__main__":
     
     # input-to-round-1 value from AES-Spec Appendix B 
     NIST_input_round_1 = '193de3bea0f4e22b9ac68d2ae9f84808'
-    x = key_bv(NIST_test_key)
+    x = key_to_bv(NIST_test_key)
     key_schedule = init_key_schedule(x)    
