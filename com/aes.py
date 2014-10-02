@@ -108,13 +108,6 @@ def key_to_bv(hex_key):
         key_bv += byte_bv # catenate new BitVector byte onto return value
     return key_bv
 
-def int_hex(i):
-    ''' HELPER to convert an int into a hex-string representation of a key '''
-    return "%02x" % i 
-
-''' END of HELPER functions '''
-
-
 def init_state_array(bv):
     ''' Return a state array corresponding to 128-bit BitVector param bv,
         where the state array is a column-ordered array (list) of 16 8-bit
@@ -158,9 +151,10 @@ def init_key_schedule(key_bv):
 	
 	# XOR 4th previous and rcon
 	word4 = key_schedule[-4] ^ word4 
-	print key_to_bv(int_hex(rcon[r + 1])).shift_right(24)
-	print "LOL"
-	word4 = word4 ^ key_to_bv(int_hex(rcon[r + 1])).shift_right(24)
+
+	r = BitVector.BitVector(intVal = rcon[r + 1], size = 8)
+	r.pad_from_right(24)
+	word4 = word4 ^ r
 	key_schedule.append(word4)
 	
 	# compute word5 to word7 and add to round-key
@@ -199,6 +193,7 @@ def inv_sbox_lookup(input):
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20   
     row = int(input[0:4])
     col = int(input[4:8])
+    # convert to BitVector
     return BitVector.BitVector(intVal = sboxinv[row][col], size = 8) 
 
 def sub_bytes(sa):
@@ -223,14 +218,12 @@ def shift_bytes_left(bv, num):
     ''' Return the value of BitVector bv after rotating it to the left
         by num bytes'''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32
-    cp = bv.deep_copy()
     return cp.__lshift__(8 * num)
 
 def shift_bytes_right(bv, num):
     ''' Return the value of BitVector bv after rotating it to the right
         by num bytes'''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32  
-    cp = bv.deep_copy()
     return cp.__rshift__(8 * num)
 
 def shift_rows(sa):
@@ -238,19 +231,27 @@ def shift_rows(sa):
     # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32  
 
     for i in range(len(sa)):  # number of columns
-	bv = sa[0][i]
-	
-        some_var = shift_bytes_left(bv, i)
-        #[... reference to the same 4 sa-bytes as above ...] = [... some_var slices to insert into sa-bytes ]
-    #return ...   # as spec'd in the docstring    
+	bv = sa[0][i] + sa[1][i] + sa[2][i] + sa[3][i]
+	bv = shift_bytes_left(bv, i)
+	sa[0][i] = bv[0:8]
+	sa[1][i] = bv[8:16]
+	sa[2][i] = bv[16:24]
+	sa[3][i] = bv[24:32]
     
-    for i in range(len(sa)):
-	sa[i] = sa[i][i:] + sa[i][:i]
+    return sa
 
 def inv_shift_rows(sa):
     ''' shift rows on state array sa to return new state array '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32   
-    pass
+    for i in range(len(sa)):  # number of columns
+	bv = sa[0][i] + sa[1][i] + sa[2][i] + sa[3][i]
+	bv = shift_bytes_right(bv, i)
+	sa[0][i] = bv[0:8]
+	sa[1][i] = bv[8:16]
+	sa[2][i] = bv[16:24]
+	sa[3][i] = bv[24:32]
+    
+    return sa
 
 def gf_mult(bv, factor):
     ''' Used by mix_columns and inv_mix_columns to perform multiplication in
