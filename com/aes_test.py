@@ -2,6 +2,7 @@
 
 import aes as AES
 import BitVector
+import copy 
 
 #Some helper functions
 def newBV(val, length=8):
@@ -117,14 +118,15 @@ def test_inv_sbox_lookup():
 def test_sub_bytes():
     ''' Iterate throught state array sa to perform sbox substitution 
     returning new state array. '''
-    actual = AES.sub_bytes(sa)
+    inp = copy.deepcopy(sa)
+    actual = AES.sub_bytes(inp)
     assert subbedSA == actual
 
 def test_inv_sub_bytes():
     ''' Iterate throught state array sa to perform inv-sbox substitution 
     returning new state array. '''
     actual = AES.inv_sub_bytes(subbedSA)
-    AES.print_state(subbedSA, "subbed")
+    AES.print_state(actual, "actual")
     AES.print_state(sa, "sa")
     assert sa == actual # Python does nested equality on lists.
 

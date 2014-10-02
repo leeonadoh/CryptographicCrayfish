@@ -190,7 +190,8 @@ def sbox_lookup(input):
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20  
     row = int(input[0:4])
     col = int(input[4:8])
-    return key_to_bv(int_hex(sbox[row][col])) # convert to BitVector 
+    # convert to BitVector 
+    return BitVector.BitVector(intVal = sbox[row][col], size = 8) 
 
 def inv_sbox_lookup(input):
     ''' Given an 8-bit BitVector input, look up the sboxinv value corresponding
@@ -198,7 +199,7 @@ def inv_sbox_lookup(input):
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20   
     row = int(input[0:4])
     col = int(input[4:8])
-    return key_to_bv(int_hex(sboxinv[row][col])) # convert to BitVector 
+    return BitVector.BitVector(intVal = sboxinv[row][col], size = 8) 
 
 def sub_bytes(sa):
     ''' Iterate throught state array sa to perform sbox substitution 
@@ -235,6 +236,14 @@ def shift_bytes_right(bv, num):
 def shift_rows(sa):
     ''' shift rows in state array sa to return new state array '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32  
+
+    for i in range(len(sa)):  # number of columns
+	bv = sa[0][i]
+	
+        some_var = shift_bytes_left(bv, i)
+        #[... reference to the same 4 sa-bytes as above ...] = [... some_var slices to insert into sa-bytes ]
+    #return ...   # as spec'd in the docstring    
+    
     for i in range(len(sa)):
 	sa[i] = sa[i][i:] + sa[i][:i]
 
