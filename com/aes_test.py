@@ -79,7 +79,6 @@ def test_init_key_schedule():
 def test_add_round_key():
     ''' XOR state array sa with roundkey rk to return new state array.
         param sa is a 4x4 state array, param rk is a 4-word round key '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 40-42
     roundKey = [AES.key_to_bv("a0fafe17"), AES.key_to_bv("88542cb1"), AES.key_to_bv("23a33939"), AES.key_to_bv("2a6c7605")]
     # mixColSA with the above round key added.
     expected = [[newBV(0xa4), newBV(0x9c), newBV(0x7f), newBV(0xf2)],\
@@ -125,7 +124,8 @@ def test_sub_bytes():
 def test_inv_sub_bytes():
     ''' Iterate throught state array sa to perform inv-sbox substitution 
     returning new state array. '''
-    actual = AES.inv_sub_bytes(subbedSA)
+    inp = copy.deepcopy(subbedSA)
+    actual = AES.inv_sub_bytes(inp)
     AES.print_state(actual, "actual")
     AES.print_state(sa, "sa")
     assert sa == actual # Python does nested equality on lists.
@@ -148,12 +148,14 @@ def test_shift_bytes_right():
 
 def test_shift_rows():
     ''' shift rows in state array sa to return new state array '''
-    actual = AES.shift_rows(subbedSA)
+    inp = copy.deepcopy(subbedSA)
+    actual = AES.shift_rows(inp)
     assert actual == shiftedSA
 
 def test_inv_shift_rows():
     ''' shift rows on state array sa to return new state array '''
-    actual = AES.inv_shift_rows(shiftedSA)
+    inp = copy.deepcopy(shiftedSA)
+    actual = AES.inv_shift_rows(inp)
     assert subbedSA == actual
 
 def test_gf_mult():
@@ -168,13 +170,13 @@ def test_gf_mult():
 
 def test_mix_columns():
     ''' Mix columns on state array sa to return new state array '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 33-35   
-    actual = AES.mix_columns(subbedSA)
+    inp = copy.deepcopy(subbedSA) 
+    actual = AES.mix_columns(inp)
     assert mixColSA == actual
 
 def test_inv_mix_columns():
     ''' Inverse mix columns on state array sa to return new state array '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDE 36  
+    inp = copy.deepcopy(mixColSA)
     actual = AES.inv_mix_columns(mixColSA)
     assert subbedSA == mixColSA
   
