@@ -152,9 +152,9 @@ def init_key_schedule(key_bv):
 	# XOR 4th previous and rcon
 	word4 = key_schedule[-4] ^ word4 
 
-	r = BitVector.BitVector(intVal = rcon[r + 1], size = 8)
-	r.pad_from_right(24)
-	word4 = word4 ^ r
+	rcb = BitVector.BitVector(intVal = rcon[r + 1], size = 8)
+	rcb.pad_from_right(24)
+	word4 = word4 ^ rcb
 	key_schedule.append(word4)
 	
 	# compute word5 to word7 and add to round-key
@@ -218,13 +218,13 @@ def shift_bytes_left(bv, num):
     ''' Return the value of BitVector bv after rotating it to the left
         by num bytes'''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32
-    return cp.__lshift__(8 * num)
+    return bv.__lshift__(8 * num)
 
 def shift_bytes_right(bv, num):
     ''' Return the value of BitVector bv after rotating it to the right
         by num bytes'''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32  
-    return cp.__rshift__(8 * num)
+    return bv.__rshift__(8 * num)
 
 def shift_rows(sa):
     ''' shift rows in state array sa to return new state array '''
