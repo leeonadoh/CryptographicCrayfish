@@ -74,11 +74,13 @@ def test_init_key_schedule():
      AES.key_to_bv("ac7766f3"), AES.key_to_bv("19fadc21"), AES.key_to_bv("28d12941"), AES.key_to_bv("575c006e"),\
      AES.key_to_bv("d014f9a8"), AES.key_to_bv("c9ee2589"), AES.key_to_bv("e13f0cc8"), AES.key_to_bv("b6630ca6"),]
     actual = AES.init_key_schedule(key)
+        
     assert actual == expected;
 
 def test_add_round_key():
     ''' XOR state array sa with roundkey rk to return new state array.
         param sa is a 4x4 state array, param rk is a 4-word round key '''
+    # Leo - I think each of these have to be one byte!
     roundKey = [AES.key_to_bv("a0fafe17"), AES.key_to_bv("88542cb1"), AES.key_to_bv("23a33939"), AES.key_to_bv("2a6c7605")]
     # mixColSA with the above round key added.
     expected = [[newBV(0xa4), newBV(0x9c), newBV(0x7f), newBV(0xf2)],\
@@ -126,8 +128,6 @@ def test_inv_sub_bytes():
     returning new state array. '''
     inp = copy.deepcopy(subbedSA)
     actual = AES.inv_sub_bytes(inp)
-    AES.print_state(actual, "actual")
-    AES.print_state(sa, "sa")
     assert sa == actual # Python does nested equality on lists.
 
 def test_shift_bytes_left():

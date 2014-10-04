@@ -166,17 +166,16 @@ def init_key_schedule(key_bv):
 def add_round_key(sa, rk):
     ''' XOR state array sa with roundkey rk to return new state array.
         param sa is a 4x4 state array, param rk is a 4-word round key '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 40-42  
+    # ADD YOUR CODE HERE - SEE LEC SLIDES 40-42      
     
-    #TODO: MAKE THIS WORK
     new_sa = []  # new output state
-    #for i in range(...):  # iterate columns
-    #    col = []   # new column
-    #    for j in range(...):   # iterate rows
-    #        some_val = ... XOR bits from state-array byte and round-key byte
-    #        col.append(...)  # insert XOR result into col
-    #    new_sa.append(...)  # insert new col into result state_array
-    #return ... as spec'd in doc-string ...
+    for i in range(len(sa)):  # iterate columns
+        col = []   # new column
+        for j in range(len(sa[i])):   # iterate rows
+            some_val = sa[i][j] ^ rk[i]
+            col.append(some_val)  # insert XOR result into col
+        new_sa.append(col)  # insert new col into result state_array
+    return new_sa
 
 def sbox_lookup(input):
     ''' Given an 8-bit BitVector input, look up the sbox value corresponding
@@ -258,12 +257,44 @@ def gf_mult(bv, factor):
 	GF(2^8).  param bv is an 8-bit BitVector, param factor is an integer.
         returns an 8-bit BitVector, whose value is bv*factor in GF(2^8) '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 33-36
-    pass
+    add_coefs = [] # create a list to keep track of partial results
+
+    # turn factor into a BV
+    bv_factor = BitVector.BitVector(size=factor, intVal=factor)  
+    
+    # GF(2^8) irreducible polynomial
+    bv_irreducible = BitVector.BitVector(size=9, intVal=0x11b)  
+    result_acc = BitVector.BitVector(size=9*factor, intVal=factor)
+
+    # generate list of power-of-2 shifted bv values
+    for i in range(bv):
+        if bv_factor[factor] == 1:  # check if factor bit is a 1
+            temp_var = BitVector.BitVector(size=8, intVal=int(bv))
+            #...temp_var....pad_from_right(...something about range var i...)
+            add_coefs.append(temp_var) 
+          
+    # add up the list of partial-results
+    for i in range(len(result_acc)):
+	pass
+
+    # pick off carry bits that extend sum of partial-results beyond 8-bits
+    # by XOR'ing with bv_irreducible starting at leftmost bit
+
+    #return ... partial-results with carry bits XOR'd off ...
 
 def mix_columns(sa):
     ''' Mix columns on state array sa to return new state array '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 33-35   
-    pass
+    newsa = []  # result state-array
+    for i in range(len(sa)):
+        col = []  # accumulator for column output
+        for j in range(len(sa[i])):
+	    # shown on lec slides 33-34, but our state-array is column-ordered
+	    # i.e. indices are reversed (col is 1st, row is 2nd)
+            col_value = gf_mult(sa[i][j], j)
+            col.append(col_value)  # add col_value to column accumulator
+        newsa.append(col)  
+    return newsa
 
 def inv_mix_columns(sa):
     ''' Inverse mix columns on state array sa to return new state array '''
