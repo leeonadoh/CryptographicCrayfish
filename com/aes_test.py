@@ -12,6 +12,15 @@ def newBV(val, length=8):
         return BitVector.BitVector(intVal = val, size = length)
     return None
 
+def printKeySchedule(schedule):
+    total = ""
+    for i in range(len(schedule)):
+        total += AES.bv_hex_str(schedule[i]) + " ";
+        if i % 4 == 3:
+            total += "\n"
+    return total
+
+
 #Define a few values.
 val1 = newBV(0x00)
 val2 = newBV(0xff)
@@ -47,13 +56,12 @@ mixColSA = [[newBV(0x04), newBV(0x66), newBV(0x81), newBV(0xe5)],\
       [newBV(0x48), newBV(0xf8), newBV(0xd3), newBV(0x7a)],\
       [newBV(0x28), newBV(0x06), newBV(0x26), newBV(0x4c)]]
 
-
 def test_sub_key_bytes():
     ''' Iterate through round-key key_word (4-byte word) performing sbox
         substitutions, returning the transformed round-key key_word '''
     # To sub root word on 4th step.
-    keyVal = [val1, val2, val3, val4]
-    expect = [exp1, exp2, exp3, exp4]
+    keyVal = val1 + val2 + val3 + val4
+    expect = exp1 + exp2 + exp3 + exp4
     actual = AES.sub_key_bytes(keyVal)
     assert actual == expect
 
@@ -165,6 +173,24 @@ def test_gf_mult():
     bitVector = newBV(0x87)
     factor = 0x02
     expected = newBV(0x15)
+    actual = AES.gf_mult(bitVector, factor)
+    assert expected == actual
+
+    bitVector = newBV(0x1f)
+    factor = 0x03
+    expected = newBV(0x5D)
+    actual = AES.gf_mult(bitVector, factor)
+    assert expected == actual
+
+    bitVector = newBV(0xff)
+    factor = 0x03
+    expected = newBV(0xe6)
+    actual = AES.gf_mult(bitVector, factor)
+    assert expected == actual
+
+    bitVector = newBV(0xff)
+    factor = 0x01
+    expected = newBV(0xff)
     actual = AES.gf_mult(bitVector, factor)
     assert expected == actual
 

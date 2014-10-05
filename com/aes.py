@@ -125,11 +125,11 @@ def init_state_array(bv):
 def sub_key_bytes(key_word):
     ''' Iterate through round-key key_word (4-byte word) performing sbox
         substitutions, returning the transformed round-key key_word '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 44-47  
-
-    for i in range(len(key_word)):
-	key_word[i] = sbox_lookup(key_word[i])
-    return key_word
+    # ADD YOUR CODE HERE - SEE LEC SLIDES 44-47
+    # Modified to convert whole 32 bit words instead of a list of 4 x 8 bits.
+    subbedKey = sbox_lookup(key_word[0:8]) + sbox_lookup(key_word[8:16]) +\
+                sbox_lookup(key_word[16:24]) + sbox_lookup(key_word[24:32])
+    return subbedKey
     
 
 def init_key_schedule(key_bv):
@@ -140,39 +140,44 @@ def init_key_schedule(key_bv):
     key_schedule = [key_bv[0:32], key_bv[32:64], key_bv[64:96], key_bv[96:128]]
 
     for r in range(rounds):
-	# compute word4
-	word4 = key_schedule[-1]
-	word4 = shift_bytes_left(word4, 1) # RotWord by 1 byte
+    	# compute word4
+    	word4 = key_schedule[-1].deep_copy() # ensure its a copy, not a reference.
+    	word4 = shift_bytes_left(word4, 1) # RotWord by 1 byte
 
-	# Sub bytes
-	round_key = [word4[0:8], word4[8:16], word4[16:24], word4[24:32]]
-	round_key = sub_key_bytes(round_key) 
-	word4 = key_to_bv(key_str(round_key))
+    	# Sub bytes
+    	word4 = sub_key_bytes(word4)
+    	
+    	# XOR 4th previous and rcon
+    	word4 = key_schedule[-4] ^ word4 
+    	rcb = BitVector.BitVector(intVal = rcon[r + 1], size = 8)
+    	rcb.pad_from_right(24)
+    	word4 = word4 ^ rcb
+    	key_schedule.append(word4)
 	
-	# XOR 4th previous and rcon
-	word4 = key_schedule[-4] ^ word4 
-
-	rcb = BitVector.BitVector(intVal = rcon[r + 1], size = 8)
-	rcb.pad_from_right(24)
-	word4 = word4 ^ rcb
-	key_schedule.append(word4)
-	
-	# compute word5 to word7 and add to round-key
-	for i in range(3):
-	    key_schedule.append(key_schedule[-1] ^ key_schedule[-4])
+    	# compute word5 to word7 and add to round-key
+    	for i in range(3):
+    	    key_schedule.append(key_schedule[-1] ^ key_schedule[-4])
 	    
     return key_schedule
 
 def add_round_key(sa, rk):
     ''' XOR state array sa with roundkey rk to return new state array.
         param sa is a 4x4 state array, param rk is a 4-word round key '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 40-42      
+    # ADD YOUR CODE HERE - SEE LEC SLIDES 40-42
+
+    # Convert rk from 4 x 32bit words to 4x4 matrix of 8 bit hex.
+    # Will still have each nested array as columns instead of rows to match
+    # the sa. 
+    convertedRK = []
+    for bitV in rk:
+        convertedRK.append([bitV[0: 8], bitV[8: 16], bitV[16: 24], bitV[24: 32]])
+    print_state(convertedRK)      
     
     new_sa = []  # new output state
     for i in range(len(sa)):  # iterate columns
         col = []   # new column
         for j in range(len(sa[i])):   # iterate rows
-            some_val = sa[i][j] ^ rk[i]
+            some_val = sa[i][j] ^ convertedRK[i][j]
             col.append(some_val)  # insert XOR result into col
         new_sa.append(col)  # insert new col into result state_array
     return new_sa
@@ -256,31 +261,32 @@ def gf_mult(bv, factor):
     ''' Used by mix_columns and inv_mix_columns to perform multiplication in
 	GF(2^8).  param bv is an 8-bit BitVector, param factor is an integer.
         returns an 8-bit BitVector, whose value is bv*factor in GF(2^8) '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 33-36
-    add_coefs = [] # create a list to keep track of partial results
+    # add_coefs = [] # create a list to keep track of partial results
 
-    # turn factor into a BV
-    bv_factor = BitVector.BitVector(size=factor, intVal=factor)  
-    
+    # turn factor into a BV. Factor should be no more than 2 bits, as max is value 3.
+    bv_factor = BitVector.BitVector(size=2, intVal=factor)
+    bv_copy = bv.deep_copy()  
     # GF(2^8) irreducible polynomial
-    bv_irreducible = BitVector.BitVector(size=9, intVal=0x11b)  
-    result_acc = BitVector.BitVector(size=9*factor, intVal=factor)
+    bv_irreducible = BitVector.BitVector(size=10, intVal=0x11b) 
 
-    # generate list of power-of-2 shifted bv values
-    for i in range(bv):
-        if bv_factor[factor] == 1:  # check if factor bit is a 1
-            temp_var = BitVector.BitVector(size=8, intVal=int(bv))
-            #...temp_var....pad_from_right(...something about range var i...)
-            add_coefs.append(temp_var) 
-          
-    # add up the list of partial-results
-    for i in range(len(result_acc)):
-	pass
+    # Since we're multiplying by a factor of no longer than 2 bits, 
+    # resulting bit vector will therefore be no longer than 10 bits.
+    result_acc = BitVector.BitVector(size=10, intVal=0)
 
-    # pick off carry bits that extend sum of partial-results beyond 8-bits
-    # by XOR'ing with bv_irreducible starting at leftmost bit
+    # Am I cheating?
+    if bv_factor[1]:
+        # lightest bit in factor is one. Add bv to result_acc.
+        result_acc = BitVector.BitVector(intVal = int(result_acc) + int(bv_copy), size = 10)
+    if bv_factor[0]: 
+        # heaviest bit in factor is one. Pad bv from right for 1 bit, and acumulate to result_acc.
+        bv_copy.pad_from_right(1)
+        result_acc = BitVector.BitVector(intVal = int(result_acc) + int(bv_copy), size = 10)
+    # Modulo (XOR actually, I'm not sure why. Need to clarify with Allen) with 0x11b if too big. 
+    if int(result_acc) > 0xff: 
+        result_acc = result_acc ^ bv_irreducible
 
-    #return ... partial-results with carry bits XOR'd off ...
+    result_acc = result_acc[len(result_acc)-8:] # cut off leading bit to size to 8 bits.
+    return result_acc;
 
 def mix_columns(sa):
     ''' Mix columns on state array sa to return new state array '''
