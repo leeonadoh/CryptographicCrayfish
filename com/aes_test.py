@@ -148,10 +148,10 @@ def test_add_round_key():
                 [newBV(0x53), newBV(0xc0), newBV(0xcf), newBV(0x7c)], \
                 [newBV(0xbb), newBV(0x25), newBV(0xd0), newBV(0xdc)]]
     roundKey = [AES.key_to_bv("3d80477d"), AES.key_to_bv("4716fe3e"), AES.key_to_bv("1e237e44"), AES.key_to_bv("6d7a883b")]
-    expected = [[newBV(0x48), newBV(0x6c), newBV(0x4d), newBV(0xd6)], \
-                [newBV(0x67), newBV(0x1d), newBV(0xe3), newBV(0x5f)], \
-                [newBV(0x4d), newBV(0x9d), newBV(0xb1), newBV(0x58)], \
-                [newBV(0xd6), newBV(0x0d), newBV(0x38), newBV(0xe7)]]
+    expected = [[newBV(0x48), newBV(0x6c), newBV(0x4e), newBV(0xee)], \
+                [newBV(0x67), newBV(0x1d), newBV(0x9d), newBV(0x0d)], \
+                [newBV(0x4d), newBV(0xe3), newBV(0xb1), newBV(0x38)], \
+                [newBV(0xd6), newBV(0x5f), newBV(0x58), newBV(0xe7)]]
     actual = AES.add_round_key(stateArr, roundKey)
     AES.print_state(expected)
     AES.print_state(actual)
