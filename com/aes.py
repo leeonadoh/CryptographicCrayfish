@@ -171,7 +171,6 @@ def add_round_key(sa, rk):
     convertedRK = []
     for bitV in rk:
         convertedRK.append([bitV[0: 8], bitV[8: 16], bitV[16: 24], bitV[24: 32]])
-    print_state(convertedRK)      
     
     new_sa = []  # new output state
     for i in range(len(sa)):  # iterate columns
