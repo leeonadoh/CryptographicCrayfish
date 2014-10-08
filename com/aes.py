@@ -80,7 +80,7 @@ def bv_hex_str(bv):
     cstr = ""
     for n in range((len(bv)/8)):
         c = chr(bv[n*8:n*8+8].intValue())
-	cstr += c
+    cstr += c
     return binascii.hexlify(cstr)
 
 def print_state(state_array, label = " "):
@@ -88,7 +88,7 @@ def print_state(state_array, label = " "):
     for col in state_array:
         psa = ""
         for row in col:
-	    psa += bv_hex_str(row)
+        psa += bv_hex_str(row)
         print psa,
     print label
 
@@ -97,14 +97,14 @@ def state_str(state_array):
     psa = ""
     for col in state_array:
         for row in col:
-	    psa += bv_hex_str(row)
+        psa += bv_hex_str(row)
     return psa
 
 def key_str(round_key):
     ''' DEBUG HELPER to convert a list of round key words to a hex string '''
     kstr = ""
     for word in round_key:
-    	kstr += bv_hex_str(word)
+        kstr += bv_hex_str(word)
     return kstr
 
 def key_to_bv(hex_key):
@@ -113,15 +113,15 @@ def key_to_bv(hex_key):
     keybytes = binascii.a2b_hex(hex_key)  # hex string to byte string
     key_bv = BitVector.BitVector(size = 0) # initialize BitVector
     for byte in keybytes: 
-	byte_bv = BitVector.BitVector(intVal=ord(byte), size=8) # one byte to add to BitVector
+    byte_bv = BitVector.BitVector(intVal=ord(byte), size=8) # one byte to add to BitVector
         key_bv += byte_bv # catenate new BitVector byte onto return value
     return key_bv
 
 def init_state_array(bv):
     ''' Return a state array corresponding to 128-bit BitVector param bv,
         where the state array is a column-ordered array (list) of 16 8-bit
-	BitVector values, organized as 4 columns (sublists) each containing
-	4 8-bit BitVector bytes, as shown on slide #17 '''
+    BitVector values, organized as 4 columns (sublists) each containing
+    4 8-bit BitVector bytes, as shown on slide #17 '''
     output = []
     for i in range(4):
         col = []
@@ -149,24 +149,24 @@ def init_key_schedule(key_bv):
     key_schedule = [key_bv[0:32], key_bv[32:64], key_bv[64:96], key_bv[96:128]]
 
     for r in range(rounds):
-    	# compute word4
-    	word4 = key_schedule[-1].deep_copy() # ensure its a copy, not a reference.
-    	word4 = shift_bytes_left(word4, 1) # RotWord by 1 byte
+        # compute word4
+        word4 = key_schedule[-1].deep_copy() # ensure its a copy, not a reference.
+        word4 = shift_bytes_left(word4, 1) # RotWord by 1 byte
 
-    	# Sub bytes
-    	word4 = sub_key_bytes(word4)
-    	
-    	# XOR 4th previous and rcon
-    	word4 = key_schedule[-4] ^ word4 
-    	rcb = BitVector.BitVector(intVal = rcon[r + 1], size = 8)
-    	rcb.pad_from_right(24)
-    	word4 = word4 ^ rcb
-    	key_schedule.append(word4)
-	
-    	# compute word5 to word7 and add to round-key
-    	for i in range(3):
-    	    key_schedule.append(key_schedule[-1] ^ key_schedule[-4])
-	    
+        # Sub bytes
+        word4 = sub_key_bytes(word4)
+        
+        # XOR 4th previous and rcon
+        word4 = key_schedule[-4] ^ word4 
+        rcb = BitVector.BitVector(intVal = rcon[r + 1], size = 8)
+        rcb.pad_from_right(24)
+        word4 = word4 ^ rcb
+        key_schedule.append(word4)
+    
+        # compute word5 to word7 and add to round-key
+        for i in range(3):
+            key_schedule.append(key_schedule[-1] ^ key_schedule[-4])
+        
     return key_schedule
 
 def add_round_key(sa, rk):
@@ -210,20 +210,20 @@ def inv_sbox_lookup(input):
 
 def sub_bytes(sa):
     ''' Iterate throught state array sa to perform sbox substitution 
-	returning new state array. '''
+    returning new state array. '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20   
     for i in range(len(sa)):
-	for j in range(len(sa[0])):
-	    sa[i][j] = sbox_lookup(sa[i][j])
+    for j in range(len(sa[0])):
+        sa[i][j] = sbox_lookup(sa[i][j])
     return sa
 
 def inv_sub_bytes(sa):
     ''' Iterate throught state array sa to perform inv-sbox substitution 
-	returning new state array. '''
+    returning new state array. '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20   
     for i in range(len(sa)):
-	for j in range(len(sa[0])):
-	    sa[i][j] = inv_sbox_lookup(sa[i][j])
+    for j in range(len(sa[0])):
+        sa[i][j] = inv_sbox_lookup(sa[i][j])
     return sa
 
 def shift_bytes_left(bv, num):
@@ -243,12 +243,12 @@ def shift_rows(sa):
     # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32  
 
     for i in range(len(sa)):  # number of columns
-	bv = sa[0][i] + sa[1][i] + sa[2][i] + sa[3][i]
-	bv = shift_bytes_left(bv, i)
-	sa[0][i] = bv[0:8]
-	sa[1][i] = bv[8:16]
-	sa[2][i] = bv[16:24]
-	sa[3][i] = bv[24:32]
+    bv = sa[0][i] + sa[1][i] + sa[2][i] + sa[3][i]
+    bv = shift_bytes_left(bv, i)
+    sa[0][i] = bv[0:8]
+    sa[1][i] = bv[8:16]
+    sa[2][i] = bv[16:24]
+    sa[3][i] = bv[24:32]
     
     return sa
 
@@ -256,18 +256,18 @@ def inv_shift_rows(sa):
     ''' shift rows on state array sa to return new state array '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32   
     for i in range(len(sa)):  # number of columns
-	bv = sa[0][i] + sa[1][i] + sa[2][i] + sa[3][i]
-	bv = shift_bytes_right(bv, i)
-	sa[0][i] = bv[0:8]
-	sa[1][i] = bv[8:16]
-	sa[2][i] = bv[16:24]
-	sa[3][i] = bv[24:32]
+    bv = sa[0][i] + sa[1][i] + sa[2][i] + sa[3][i]
+    bv = shift_bytes_right(bv, i)
+    sa[0][i] = bv[0:8]
+    sa[1][i] = bv[8:16]
+    sa[2][i] = bv[16:24]
+    sa[3][i] = bv[24:32]
     
     return sa
 
 def gf_mult(bv, factor):
     ''' Used by mix_columns and inv_mix_columns to perform multiplication in
-	GF(2^8).  param bv is an 8-bit BitVector, param factor is an integer.
+    GF(2^8).  param bv is an 8-bit BitVector, param factor is an integer.
         returns an 8-bit BitVector, whose value is bv*factor in GF(2^8) '''
     # Rijndael finite field algorithm used is documented here: 
     # https://en.wikipedia.org/wiki/Finite_field_arithmetic#Rijndael.27s_finite_field
@@ -340,14 +340,14 @@ def inv_mix_columns(sa):
 def encrypt(hex_key, hex_plaintext):
     ''' perform AES encryption using 128-bit hex_key on 128-bit plaintext 
         hex_plaintext, where both key and plaintext values are expressed
-	in hexadecimal string notation. '''
+    in hexadecimal string notation. '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 14-15
     pass
 
 def decrypt(hex_key, hex_ciphertext):
     ''' perform AES decryption using 128-bit hex_key on 128-bit ciphertext
-       	hex_ciphertext, where both key and ciphertext values are expressed
-	in hexadecimal string notation. '''
+        hex_ciphertext, where both key and ciphertext values are expressed
+    in hexadecimal string notation. '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 14-15
     pass
 
