@@ -88,8 +88,8 @@ def print_state(state_array, label = " "):
     for col in state_array:
         psa = ""
         for row in col:
-        psa += bv_hex_str(row)
-        print psa,
+            psa += bv_hex_str(row)
+            print psa,
     print label
 
 def state_str(state_array):
@@ -97,7 +97,7 @@ def state_str(state_array):
     psa = ""
     for col in state_array:
         for row in col:
-        psa += bv_hex_str(row)
+            psa += bv_hex_str(row)
     return psa
 
 def key_str(round_key):
@@ -113,7 +113,7 @@ def key_to_bv(hex_key):
     keybytes = binascii.a2b_hex(hex_key)  # hex string to byte string
     key_bv = BitVector.BitVector(size = 0) # initialize BitVector
     for byte in keybytes: 
-    byte_bv = BitVector.BitVector(intVal=ord(byte), size=8) # one byte to add to BitVector
+        byte_bv = BitVector.BitVector(intVal=ord(byte), size=8) # one byte to add to BitVector
         key_bv += byte_bv # catenate new BitVector byte onto return value
     return key_bv
 
@@ -213,8 +213,8 @@ def sub_bytes(sa):
     returning new state array. '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20   
     for i in range(len(sa)):
-    for j in range(len(sa[0])):
-        sa[i][j] = sbox_lookup(sa[i][j])
+        for j in range(len(sa[0])):
+            sa[i][j] = sbox_lookup(sa[i][j])
     return sa
 
 def inv_sub_bytes(sa):
@@ -222,8 +222,8 @@ def inv_sub_bytes(sa):
     returning new state array. '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 18-20   
     for i in range(len(sa)):
-    for j in range(len(sa[0])):
-        sa[i][j] = inv_sbox_lookup(sa[i][j])
+        for j in range(len(sa[0])):
+            sa[i][j] = inv_sbox_lookup(sa[i][j])
     return sa
 
 def shift_bytes_left(bv, num):
@@ -243,12 +243,12 @@ def shift_rows(sa):
     # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32  
 
     for i in range(len(sa)):  # number of columns
-    bv = sa[0][i] + sa[1][i] + sa[2][i] + sa[3][i]
-    bv = shift_bytes_left(bv, i)
-    sa[0][i] = bv[0:8]
-    sa[1][i] = bv[8:16]
-    sa[2][i] = bv[16:24]
-    sa[3][i] = bv[24:32]
+        bv = sa[0][i] + sa[1][i] + sa[2][i] + sa[3][i]
+        bv = shift_bytes_left(bv, i)
+        sa[0][i] = bv[0:8]
+        sa[1][i] = bv[8:16]
+        sa[2][i] = bv[16:24]
+        sa[3][i] = bv[24:32]
     
     return sa
 
@@ -256,12 +256,12 @@ def inv_shift_rows(sa):
     ''' shift rows on state array sa to return new state array '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 30-32   
     for i in range(len(sa)):  # number of columns
-    bv = sa[0][i] + sa[1][i] + sa[2][i] + sa[3][i]
-    bv = shift_bytes_right(bv, i)
-    sa[0][i] = bv[0:8]
-    sa[1][i] = bv[8:16]
-    sa[2][i] = bv[16:24]
-    sa[3][i] = bv[24:32]
+        bv = sa[0][i] + sa[1][i] + sa[2][i] + sa[3][i]
+        bv = shift_bytes_right(bv, i)
+        sa[0][i] = bv[0:8]
+        sa[1][i] = bv[8:16]
+        sa[2][i] = bv[16:24]
+        sa[3][i] = bv[24:32]
     
     return sa
 
