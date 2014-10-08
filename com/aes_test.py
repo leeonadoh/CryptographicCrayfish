@@ -19,49 +19,25 @@ def printKeySchedule(schedule):
         if i % 4 == 3:
             total += "\n"
     return total
+# Helper function end.
 
-
-#Define a few values.
-val1 = newBV(0x00)
-val2 = newBV(0xff)
-val3 = newBV(0xac)
-val4 = newBV(0x9d)
-
-exp1 = newBV(0x63)
-exp2 = newBV(0x16)
-exp3 = newBV(0x91)
-exp4 = newBV(0x5e)
-
-# State array.
-sa = [[newBV(0x19), newBV(0x3d), newBV(0xe3), newBV(0xbe)],\
-      [newBV(0xa0), newBV(0xf4), newBV(0xe2), newBV(0x2b)],\
-      [newBV(0x9a), newBV(0xc6), newBV(0x8d), newBV(0x2a)],\
-      [newBV(0xe9), newBV(0xf8), newBV(0x48), newBV(0x08)]]
-
-# S-box substituted state array. 
-subbedSA = [[newBV(0xd4), newBV(0x27), newBV(0x11), newBV(0xae)],\
-      [newBV(0xe0), newBV(0xbf), newBV(0x98), newBV(0xf1)],\
-      [newBV(0xb8), newBV(0xb4), newBV(0x5d), newBV(0xe5)],\
-      [newBV(0x1e), newBV(0x41), newBV(0x52), newBV(0x30)]]
-
-# Row shifted version of subbedSA
-shiftedSA = [[newBV(0xd4), newBV(0xbf), newBV(0x5d), newBV(0x30)],\
-      [newBV(0xe0), newBV(0xb4), newBV(0x52), newBV(0xae)],\
-      [newBV(0xb8), newBV(0x41), newBV(0x11), newBV(0xf1)],\
-      [newBV(0x1e), newBV(0x27), newBV(0x98), newBV(0xe5)]]
-
-# Mix column-ed version of subbedSA
-mixColSA = [[newBV(0x04), newBV(0x66), newBV(0x81), newBV(0xe5)],\
-      [newBV(0xe0), newBV(0xcb), newBV(0x19), newBV(0x9a)],\
-      [newBV(0x48), newBV(0xf8), newBV(0xd3), newBV(0x7a)],\
-      [newBV(0x28), newBV(0x06), newBV(0x26), newBV(0x4c)]]
 
 def test_sub_key_bytes():
     ''' Iterate through round-key key_word (4-byte word) performing sbox
         substitutions, returning the transformed round-key key_word '''
     # To sub root word on 4th step.
-    keyVal = val1 + val2 + val3 + val4
-    expect = exp1 + exp2 + exp3 + exp4
+    keyVal = AES.key_to_bv("19a09ae9")
+    expect = AES.key_to_bv("d4e0b81e")
+    actual = AES.sub_key_bytes(keyVal)
+    assert actual == expect
+
+    keyVal = AES.key_to_bv("a4686b02")
+    expect = AES.key_to_bv("49457f77")
+    actual = AES.sub_key_bytes(keyVal)
+    assert actual == expect
+
+    keyVal = AES.key_to_bv("61dde3ef")
+    expect = AES.key_to_bv("efc111df")
     actual = AES.sub_key_bytes(keyVal)
     assert actual == expect
 
@@ -160,70 +136,228 @@ def test_add_round_key():
 def test_sbox_lookup():
     ''' Given an 8-bit BitVector input, look up the sbox value corresponding
         to that byte value, returning the sbox value as an 8-bit BitVector.  '''
-    act1 = AES.sbox_lookup(val1)
-    act2 = AES.sbox_lookup(val2)
-    act3 = AES.sbox_lookup(val3)
-    act4 = AES.sbox_lookup(val4)
-    
-    assert act1 == exp1
-    assert act2 == exp2
-    assert act3 == exp3
-    assert act4 == exp4
+    actual = AES.sbox_lookup(newBV(0x00))
+    expect = newBV(0x63)
+    assert actual == expect
+
+    actual = AES.sbox_lookup(newBV(0xff))
+    expect = newBV(0x16)
+    assert actual == expect
+
+    actual = AES.sbox_lookup(newBV(0xac))
+    expect = newBV(0x91)
+    assert actual == expect
+
+    actual = AES.sbox_lookup(newBV(0x9d))
+    expect = newBV(0x5e)
+    assert actual == expect
 
 def test_inv_sbox_lookup():
     ''' Given an 8-bit BitVector input, look up the sboxinv value corresponding
         to that byte, returning the sboxinv value as an 8-bit BitVector. '''
-    act1 = AES.inv_sbox_lookup(exp1)
-    act2 = AES.inv_sbox_lookup(exp2)
-    act3 = AES.inv_sbox_lookup(exp3)
-    act4 = AES.inv_sbox_lookup(exp4)
+    expect = AES.sbox_lookup(newBV(0x00))
+    actual = newBV(0x63)
+    assert actual == expect
 
-    assert act1 == val1
-    assert act2 == val2
-    assert act3 == val3
-    assert act4 == val4
+    expect = AES.sbox_lookup(newBV(0xff))
+    actual = newBV(0x16)
+    assert actual == expect
+
+    expect = AES.sbox_lookup(newBV(0xac))
+    actual = newBV(0x91)
+    assert actual == expect
+
+    expect = AES.sbox_lookup(newBV(0x9d))
+    actual = newBV(0x5e)
+    assert actual == expect
 
 def test_sub_bytes():
     ''' Iterate throught state array sa to perform sbox substitution 
     returning new state array. '''
-    inp = copy.deepcopy(sa)
-    actual = AES.sub_bytes(inp)
-    assert subbedSA == actual
+    stateArr = [[newBV(0xaa), newBV(0x8f), newBV(0x5f), newBV(0x03)], \
+                [newBV(0x61), newBV(0xdd), newBV(0xe3), newBV(0xef)], \
+                [newBV(0x82), newBV(0xd2), newBV(0x4a), newBV(0xd2)], \
+                [newBV(0x68), newBV(0x32), newBV(0x46), newBV(0x9a)]]
+    expected = [[newBV(0xac), newBV(0x73), newBV(0xcf), newBV(0x7b)], \
+                [newBV(0xef), newBV(0xc1), newBV(0x11), newBV(0xdf)], \
+                [newBV(0x13), newBV(0xb5), newBV(0xd6), newBV(0xb5)], \
+                [newBV(0x45), newBV(0x23), newBV(0x5a), newBV(0xb8)]]
+    actual = AES.sub_bytes(stateArr)
+    assert expected == actual
+
+    stateArr = [[newBV(0x48), newBV(0x67), newBV(0x4d), newBV(0xd6)], \
+                [newBV(0x6c), newBV(0x1d), newBV(0xe3), newBV(0x5f)], \
+                [newBV(0x4e), newBV(0x9d), newBV(0xb1), newBV(0x58)], \
+                [newBV(0xee), newBV(0x0d), newBV(0x38), newBV(0xe7)]]
+    expected = [[newBV(0x52), newBV(0x85), newBV(0xe3), newBV(0xf6)], \
+                [newBV(0x50), newBV(0xa4), newBV(0x11), newBV(0xcf)], \
+                [newBV(0x2f), newBV(0x5e), newBV(0xc8), newBV(0x6a)], \
+                [newBV(0x28), newBV(0xd7), newBV(0x07), newBV(0x94)]]
+    actual = AES.sub_bytes(stateArr)
+    assert expected == actual
+
+    stateArr = [[newBV(0xe0), newBV(0xc8), newBV(0xd9), newBV(0x85)], \
+                [newBV(0x92), newBV(0x63), newBV(0xb1), newBV(0xb8)], \
+                [newBV(0x7f), newBV(0x63), newBV(0x35), newBV(0xbe)], \
+                [newBV(0xe8), newBV(0xc0), newBV(0x50), newBV(0x01)]]
+    expected = [[newBV(0xe1), newBV(0xe8), newBV(0x35), newBV(0x97)], \
+                [newBV(0x4f), newBV(0xfb), newBV(0xc8), newBV(0x6c)], \
+                [newBV(0xd2), newBV(0xfb), newBV(0x96), newBV(0xae)], \
+                [newBV(0x9b), newBV(0xba), newBV(0x53), newBV(0x7c)]]
+    actual = AES.sub_bytes(stateArr)
+    assert expected == actual
 
 def test_inv_sub_bytes():
     ''' Iterate throught state array sa to perform inv-sbox substitution 
     returning new state array. '''
-    inp = copy.deepcopy(subbedSA)
-    actual = AES.inv_sub_bytes(inp)
-    assert sa == actual # Python does nested equality on lists.
+    expected = [[newBV(0xaa), newBV(0x8f), newBV(0x5f), newBV(0x03)], \
+                [newBV(0x61), newBV(0xdd), newBV(0xe3), newBV(0xef)], \
+                [newBV(0x82), newBV(0xd2), newBV(0x4a), newBV(0xd2)], \
+                [newBV(0x68), newBV(0x32), newBV(0x46), newBV(0x9a)]]
+    stateArr = [[newBV(0xac), newBV(0x73), newBV(0xcf), newBV(0x7b)], \
+                [newBV(0xef), newBV(0xc1), newBV(0x11), newBV(0xdf)], \
+                [newBV(0x13), newBV(0xb5), newBV(0xd6), newBV(0xb5)], \
+                [newBV(0x45), newBV(0x23), newBV(0x5a), newBV(0xb8)]]
+    actual = AES.inv_sub_bytes(stateArr)
+    assert expected == actual
+
+    expected = [[newBV(0x48), newBV(0x67), newBV(0x4d), newBV(0xd6)], \
+                [newBV(0x6c), newBV(0x1d), newBV(0xe3), newBV(0x5f)], \
+                [newBV(0x4e), newBV(0x9d), newBV(0xb1), newBV(0x58)], \
+                [newBV(0xee), newBV(0x0d), newBV(0x38), newBV(0xe7)]]
+    stateArr = [[newBV(0x52), newBV(0x85), newBV(0xe3), newBV(0xf6)], \
+                [newBV(0x50), newBV(0xa4), newBV(0x11), newBV(0xcf)], \
+                [newBV(0x2f), newBV(0x5e), newBV(0xc8), newBV(0x6a)], \
+                [newBV(0x28), newBV(0xd7), newBV(0x07), newBV(0x94)]]
+    actual = AES.inv_sub_bytes(stateArr)
+    assert expected == actual
+
+    expected = [[newBV(0xe0), newBV(0xc8), newBV(0xd9), newBV(0x85)], \
+                [newBV(0x92), newBV(0x63), newBV(0xb1), newBV(0xb8)], \
+                [newBV(0x7f), newBV(0x63), newBV(0x35), newBV(0xbe)], \
+                [newBV(0xe8), newBV(0xc0), newBV(0x50), newBV(0x01)]]
+    stateArr = [[newBV(0xe1), newBV(0xe8), newBV(0x35), newBV(0x97)], \
+                [newBV(0x4f), newBV(0xfb), newBV(0xc8), newBV(0x6c)], \
+                [newBV(0xd2), newBV(0xfb), newBV(0x96), newBV(0xae)], \
+                [newBV(0x9b), newBV(0xba), newBV(0x53), newBV(0x7c)]]
+    actual = AES.inv_sub_bytes(stateArr)
+    assert expected == actual
 
 def test_shift_bytes_left():
     ''' Return the value of BitVector bv after rotating it to the left
         by num bytes'''
-    bitVector = newBV(0xff00, 16)
+    bitVec = newBV(0xff00, 16)
     expect = newBV(0x00ff, 16)
-    actual = AES.shift_bytes_left(bitVector, 1)
+    actual = AES.shift_bytes_left(bitVec, 1)
+    assert actual == expect
+
+    bitVec = newBV(0xffff, 16)
+    expect = newBV(0xffff, 16)
+    actual = AES.shift_bytes_left(bitVec, 1)
+    assert actual == expect
+
+    bitVec = newBV(0xa5f3, 16)
+    expect = newBV(0xf3a5, 16)
+    actual = AES.shift_bytes_left(bitVec, 1)
+    assert actual == expect
+
+    bitVec = newBV(0x8d87, 16)
+    expect = newBV(0x878d, 16)
+    actual = AES.shift_bytes_left(bitVec, 1)
     assert actual == expect
 
 def test_shift_bytes_right():
     ''' Return the value of BitVector bv after rotating it to the right
         by num bytes'''
-    bitVector = newBV(0x00ff, 16)
     expect = newBV(0xff00, 16)
-    actual = AES.shift_bytes_right(bitVector, 1)
+    bitVec = newBV(0x00ff, 16)
+    actual = AES.shift_bytes_left(bitVec, 1)
+    assert actual == expect
+
+    expect = newBV(0xffff, 16)
+    bitVec = newBV(0xffff, 16)
+    actual = AES.shift_bytes_left(bitVec, 1)
+    assert actual == expect
+
+    expect = newBV(0xa5f3, 16)
+    bitVec = newBV(0xf3a5, 16)
+    actual = AES.shift_bytes_left(bitVec, 1)
+    assert actual == expect
+
+    expect = newBV(0x8d87, 16)
+    bitVec = newBV(0x878d, 16)
+    actual = AES.shift_bytes_left(bitVec, 1)
     assert actual == expect
 
 def test_shift_rows():
     ''' shift rows in state array sa to return new state array '''
-    inp = copy.deepcopy(subbedSA)
-    actual = AES.shift_rows(inp)
-    assert actual == shiftedSA
+    stateArr = [[newBV(0xbe), newBV(0x83), newBV(0x2c), newBV(0xc8)], \
+                [newBV(0xd4), newBV(0x3b), newBV(0x86), newBV(0xc0)], \
+                [newBV(0x0a), newBV(0xe1), newBV(0xd4), newBV(0x4d)], \
+                [newBV(0xda), newBV(0x64), newBV(0xf2), newBV(0xfe)]]
+    expected = [[newBV(0xbe), newBV(0x3b), newBV(0xd4), newBV(0xfe)], \
+                [newBV(0xd4), newBV(0xe1), newBV(0xf2), newBV(0xc8)], \
+                [newBV(0x0a), newBV(0x64), newBV(0x2c), newBV(0xc0)], \
+                [newBV(0xda), newBV(0x83), newBV(0x86), newBV(0x4d)]]
+    actual = AES.shift_rows(stateArr)
+    assert actual == expected
+
+    stateArr = [[newBV(0x87), newBV(0xec), newBV(0x4a), newBV(0x8c)], \
+                [newBV(0xf2), newBV(0x6e), newBV(0xc3), newBV(0xd8)], \
+                [newBV(0x4d), newBV(0x4c), newBV(0x46), newBV(0x95)], \
+                [newBV(0x97), newBV(0x90), newBV(0xe7), newBV(0xa6)]]
+    expected = [[newBV(0x87), newBV(0x6e), newBV(0x46), newBV(0xa6)], \
+                [newBV(0xf2), newBV(0x4c), newBV(0xe7), newBV(0x8c)], \
+                [newBV(0x4d), newBV(0x90), newBV(0x4a), newBV(0xd8)], \
+                [newBV(0x97), newBV(0xec), newBV(0xc3), newBV(0x95)]]
+    actual = AES.shift_rows(stateArr)
+    assert actual == expected
+
+    stateArr = [[newBV(0xe9), newBV(0x09), newBV(0x89), newBV(0x72)], \
+                [newBV(0xcb), newBV(0x31), newBV(0x07), newBV(0x5f)], \
+                [newBV(0x3d), newBV(0x32), newBV(0x7d), newBV(0x94)], \
+                [newBV(0xaf), newBV(0x2e), newBV(0x2c), newBV(0xb5)]]
+    expected = [[newBV(0xe9), newBV(0x31), newBV(0x7d), newBV(0xb5)], \
+                [newBV(0xcb), newBV(0x32), newBV(0x2c), newBV(0x72)], \
+                [newBV(0x3d), newBV(0x2e), newBV(0x89), newBV(0x5f)], \
+                [newBV(0xaf), newBV(0x09), newBV(0x07), newBV(0x94)]]
+    actual = AES.shift_rows(stateArr)
+    assert actual == expected
 
 def test_inv_shift_rows():
     ''' shift rows on state array sa to return new state array '''
-    inp = copy.deepcopy(shiftedSA)
-    actual = AES.inv_shift_rows(inp)
-    assert subbedSA == actual
+    expected = [[newBV(0xbe), newBV(0x83), newBV(0x2c), newBV(0xc8)], \
+                [newBV(0xd4), newBV(0x3b), newBV(0x86), newBV(0xc0)], \
+                [newBV(0x0a), newBV(0xe1), newBV(0xd4), newBV(0x4d)], \
+                [newBV(0xda), newBV(0x64), newBV(0xf2), newBV(0xfe)]]
+    stateArr = [[newBV(0xbe), newBV(0x3b), newBV(0xd4), newBV(0xfe)], \
+                [newBV(0xd4), newBV(0xe1), newBV(0xf2), newBV(0xc8)], \
+                [newBV(0x0a), newBV(0x64), newBV(0x2c), newBV(0xc0)], \
+                [newBV(0xda), newBV(0x83), newBV(0x86), newBV(0x4d)]]
+    actual = AES.inv_shift_rows(stateArr)
+    assert actual == expected
+
+    expected = [[newBV(0x87), newBV(0xec), newBV(0x4a), newBV(0x8c)], \
+                [newBV(0xf2), newBV(0x6e), newBV(0xc3), newBV(0xd8)], \
+                [newBV(0x4d), newBV(0x4c), newBV(0x46), newBV(0x95)], \
+                [newBV(0x97), newBV(0x90), newBV(0xe7), newBV(0xa6)]]
+    stateArr = [[newBV(0x87), newBV(0x6e), newBV(0x46), newBV(0xa6)], \
+                [newBV(0xf2), newBV(0x4c), newBV(0xe7), newBV(0x8c)], \
+                [newBV(0x4d), newBV(0x90), newBV(0x4a), newBV(0xd8)], \
+                [newBV(0x97), newBV(0xec), newBV(0xc3), newBV(0x95)]]
+    actual = AES.inv_shift_rows(stateArr)
+    assert actual == expected
+
+    expected = [[newBV(0xe9), newBV(0x09), newBV(0x89), newBV(0x72)], \
+                [newBV(0xcb), newBV(0x31), newBV(0x07), newBV(0x5f)], \
+                [newBV(0x3d), newBV(0x32), newBV(0x7d), newBV(0x94)], \
+                [newBV(0xaf), newBV(0x2e), newBV(0x2c), newBV(0xb5)]]
+    stateArr = [[newBV(0xe9), newBV(0x31), newBV(0x7d), newBV(0xb5)], \
+                [newBV(0xcb), newBV(0x32), newBV(0x2c), newBV(0x72)], \
+                [newBV(0x3d), newBV(0x2e), newBV(0x89), newBV(0x5f)], \
+                [newBV(0xaf), newBV(0x09), newBV(0x07), newBV(0x94)]]
+    actual = AES.inv_shift_rows(stateArr)
+    assert actual == expected
 
 def test_gf_mult():
     ''' Used by mix_columns and inv_mix_columns to perform multiplication in
@@ -235,36 +369,88 @@ def test_gf_mult():
     actual = AES.gf_mult(bitVector, factor)
     assert expected == actual
 
-    bitVector = newBV(0x1f)
-    factor = 0x03
-    expected = newBV(0x5D)
+    bitVector = newBV(0xca)
+    factor = 0x53
+    expected = newBV(0x01)
     actual = AES.gf_mult(bitVector, factor)
     assert expected == actual
 
-    bitVector = newBV(0xff)
-    factor = 0x03
-    expected = newBV(0xe6)
-    actual = AES.gf_mult(bitVector, factor)
-    assert expected == actual
-
-    bitVector = newBV(0xff)
-    factor = 0x01
-    expected = newBV(0xff)
+    bitVector = newBV(0xb6)
+    factor = 0x53
+    expected = newBV(0x36)
     actual = AES.gf_mult(bitVector, factor)
     assert expected == actual
 
 def test_mix_columns():
     ''' Mix columns on state array sa to return new state array '''
-    inp = copy.deepcopy(subbedSA) 
-    actual = AES.mix_columns(inp)
-    assert mixColSA == actual
+    stateArr = [[newBV(0xac), newBV(0xc1), newBV(0xd6), newBV(0xb8)], \
+                [newBV(0xef), newBV(0xb5), newBV(0x5a), newBV(0x7b)], \
+                [newBV(0x13), newBV(0x23), newBV(0xcf), newBV(0xdf)], \
+                [newBV(0x45), newBV(0x73), newBV(0x11), newBV(0xb5)]]
+    expected = [[newBV(0x75), newBV(0xec), newBV(0x09), newBV(0x93)], \
+                [newBV(0x20), newBV(0x0b), newBV(0x63), newBV(0x33)], \
+                [newBV(0x53), newBV(0xc0), newBV(0xcf), newBV(0x7c)], \
+                [newBV(0xbb), newBV(0x25), newBV(0xd0), newBV(0xdc)]]
+    actual = AES.mix_columns(stateArr)
+    assert expected == actual
 
+    stateArr = [[newBV(0x52), newBV(0xa4), newBV(0xc8), newBV(0x94)], \
+                [newBV(0x85), newBV(0x11), newBV(0x6a), newBV(0x28)], \
+                [newBV(0xe3), newBV(0xcf), newBV(0x2f), newBV(0xd7)], \
+                [newBV(0xf6), newBV(0x50), newBV(0x5e), newBV(0x07)]]
+    expected = [[newBV(0x0f), newBV(0xd6), newBV(0xda), newBV(0xa9)], \
+                [newBV(0x60), newBV(0x31), newBV(0x38), newBV(0xbf)], \
+                [newBV(0x6f), newBV(0xc0), newBV(0x10), newBV(0x6b)], \
+                [newBV(0x5e), newBV(0xb3), newBV(0x13), newBV(0x01)]]
+    actual = AES.mix_columns(stateArr)
+    assert expected == actual
+    
+    stateArr = [[newBV(0xe1), newBV(0xfb), newBV(0x96), newBV(0x7c)], \
+                [newBV(0xe8), newBV(0xc8), newBV(0xae), newBV(0x9b)], \
+                [newBV(0x35), newBV(0x6c), newBV(0xd2), newBV(0xba)], \
+                [newBV(0x97), newBV(0x4f), newBV(0xfb), newBV(0x53)]]
+    expected = [[newBV(0x25), newBV(0xd1), newBV(0xa9), newBV(0xad)], \
+                [newBV(0xbd), newBV(0x11), newBV(0xd1), newBV(0x68)], \
+                [newBV(0xb6), newBV(0x3a), newBV(0x33), newBV(0x8e)], \
+                [newBV(0x4c), newBV(0x4c), newBV(0xc0), newBV(0xb0)]]
+    actual = AES.mix_columns(stateArr)
+    assert expected == actual
+    
 def test_inv_mix_columns():
     ''' Inverse mix columns on state array sa to return new state array '''
-    inp = copy.deepcopy(mixColSA)
-    actual = AES.inv_mix_columns(mixColSA)
-    assert subbedSA == mixColSA
-  
+    expected = [[newBV(0xac), newBV(0xc1), newBV(0xd6), newBV(0xb8)], \
+                [newBV(0xef), newBV(0xb5), newBV(0x5a), newBV(0x7b)], \
+                [newBV(0x13), newBV(0x23), newBV(0xcf), newBV(0xdf)], \
+                [newBV(0x45), newBV(0x73), newBV(0x11), newBV(0xb5)]]
+    stateArr = [[newBV(0x75), newBV(0xec), newBV(0x09), newBV(0x93)], \
+                [newBV(0x20), newBV(0x0b), newBV(0x63), newBV(0x33)], \
+                [newBV(0x53), newBV(0xc0), newBV(0xcf), newBV(0x7c)], \
+                [newBV(0xbb), newBV(0x25), newBV(0xd0), newBV(0xdc)]]
+    actual = AES.mix_columns(stateArr)
+    assert expected == actual
+
+    expected = [[newBV(0x52), newBV(0xa4), newBV(0xc8), newBV(0x94)], \
+                [newBV(0x85), newBV(0x11), newBV(0x6a), newBV(0x28)], \
+                [newBV(0xe3), newBV(0xcf), newBV(0x2f), newBV(0xd7)], \
+                [newBV(0xf6), newBV(0x50), newBV(0x5e), newBV(0x07)]]
+    stateArr = [[newBV(0x0f), newBV(0xd6), newBV(0xda), newBV(0xa9)], \
+                [newBV(0x60), newBV(0x31), newBV(0x38), newBV(0xbf)], \
+                [newBV(0x6f), newBV(0xc0), newBV(0x10), newBV(0x6b)], \
+                [newBV(0x5e), newBV(0xb3), newBV(0x13), newBV(0x01)]]
+    actual = AES.mix_columns(stateArr)
+    assert expected == actual
+    
+    expected = [[newBV(0xe1), newBV(0xfb), newBV(0x96), newBV(0x7c)], \
+                [newBV(0xe8), newBV(0xc8), newBV(0xae), newBV(0x9b)], \
+                [newBV(0x35), newBV(0x6c), newBV(0xd2), newBV(0xba)], \
+                [newBV(0x97), newBV(0x4f), newBV(0xfb), newBV(0x53)]]
+    stateArr = [[newBV(0x25), newBV(0xd1), newBV(0xa9), newBV(0xad)], \
+                [newBV(0xbd), newBV(0x11), newBV(0xd1), newBV(0x68)], \
+                [newBV(0xb6), newBV(0x3a), newBV(0x33), newBV(0x8e)], \
+                [newBV(0x4c), newBV(0x4c), newBV(0xc0), newBV(0xb0)]]
+    actual = AES.inv_mix_columns(stateArr)
+    assert expected == actual
+
 def test_encrypt():
     ''' perform AES encryption using 128-bit hex_key on 128-bit plaintext 
         hex_plaintext, where both key and plaintext values are expressed

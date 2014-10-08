@@ -260,32 +260,25 @@ def gf_mult(bv, factor):
     ''' Used by mix_columns and inv_mix_columns to perform multiplication in
 	GF(2^8).  param bv is an 8-bit BitVector, param factor is an integer.
         returns an 8-bit BitVector, whose value is bv*factor in GF(2^8) '''
-    # add_coefs = [] # create a list to keep track of partial results
+    # Rijndael finite field algorithm used is documented here: 
+    # https://en.wikipedia.org/wiki/Finite_field_arithmetic#Rijndael.27s_finite_field
+    bvNum = bv.deep_copy()
+    bvFac = BitVector.BitVector(intVal = factor, size = 8)
+    prod = BitVector.BitVector(intVal = 0, size = 8)
+    gfConst = BitVector.BitVector(intVal = 0x1b, size = 8)
 
-    # turn factor into a BV. Factor should be no more than 2 bits, as max is value 3.
-    bv_factor = BitVector.BitVector(size=2, intVal=factor)
-    bv_copy = bv.deep_copy()  
-    # GF(2^8) irreducible polynomial
-    bv_irreducible = BitVector.BitVector(size=10, intVal=0x11b) 
-
-    # Since we're multiplying by a factor of no longer than 2 bits, 
-    # resulting bit vector will therefore be no longer than 10 bits.
-    result_acc = BitVector.BitVector(size=10, intVal=0)
-
-    # Am I cheating?
-    if bv_factor[1]:
-        # lightest bit in factor is one. Add bv to result_acc.
-        result_acc = BitVector.BitVector(intVal = int(result_acc) + int(bv_copy), size = 10)
-    if bv_factor[0]: 
-        # heaviest bit in factor is one. Pad bv from right for 1 bit, and acumulate to result_acc.
-        bv_copy.pad_from_right(1)
-        result_acc = BitVector.BitVector(intVal = int(result_acc) + int(bv_copy), size = 10)
-    # Modulo (XOR actually, I'm not sure why. Need to clarify with Allen) with 0x11b if too big. 
-    if int(result_acc) > 0xff: 
-        result_acc = result_acc ^ bv_irreducible
-
-    result_acc = result_acc[len(result_acc)-8:] # cut off leading bit to size to 8 bits.
-    return result_acc;
+    has8thBit = False
+    for i in range(8):
+        if bvFac[7]:
+            prod = prod ^ bvNum
+        has8thBit = bvNum[0]
+        bvNum << 1
+        bvNum[7] = 0
+        if has8thBit:
+            bvNum = bvNum ^ gfConst
+        bvFac >> 1
+        bvFac[0] = 0
+    return prod
 
 def mix_columns(sa):
     ''' Mix columns on state array sa to return new state array '''
