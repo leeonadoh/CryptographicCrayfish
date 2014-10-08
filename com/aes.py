@@ -64,6 +64,15 @@ rcon = [0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 
         0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39, 0x72, 0xe4, 0xd3, 0xbd,
         0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb]
 
+gfMatrix = [[2, 3, 1, 1],\
+            [1, 2, 3, 1],\
+            [1, 1, 2, 3],\
+            [3, 1, 1, 2]]
+invGfMatrix = [[14, 11, 13, 9],\
+               [9, 14, 11, 13],\
+               [13, 9, 14, 11],\
+               [11, 13, 9, 14]]
+
 ''' HELPER functions (you are free to use or ignore these)'''
 
 def bv_hex_str(bv):
@@ -284,20 +293,49 @@ def mix_columns(sa):
     ''' Mix columns on state array sa to return new state array '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 33-35   
     newsa = []  # result state-array
-    for i in range(len(sa)):
-        col = []  # accumulator for column output
-        for j in range(len(sa[i])):
-	    # shown on lec slides 33-34, but our state-array is column-ordered
-	    # i.e. indices are reversed (col is 1st, row is 2nd)
-            col_value = gf_mult(sa[i][j], j)
-            col.append(col_value)  # add col_value to column accumulator
-        newsa.append(col)  
+
+    for saCol in sa:
+        # for each column in state array, mutiply it with gf matrix.
+        # initalize a list containing the new bytes for the column.
+        newCol = []
+        for gfRow in gfMatrix:
+            # initialize a zero byte to accumulate additions (xors)
+            newByte = BitVector.BitVector(intVal = 0, size = 8)
+            for saByte, factor in zip(saCol, gfRow):
+                # for each element in the state array column, and each 
+                # factor in the gf matrix row, multiply them, and accumulate
+                # onto newByte.
+                newByte = newByte ^ gf_mult(saByte, factor)
+            # append it to the new column.
+            newCol.append(newByte);
+        # append mixed column to newsa
+        newsa.append(newCol)
+    # end of for loop
     return newsa
 
 def inv_mix_columns(sa):
     ''' Inverse mix columns on state array sa to return new state array '''
     # ADD YOUR CODE HERE - SEE LEC SLIDE 36  
-    pass
+    newsa = []  # result state-array
+
+    for saCol in sa:
+        # for each column in state array, mutiply it with gf matrix.
+        # initalize a list containing the new bytes for the column.
+        newCol = []
+        for invGfRow in invGfMatrix:
+            # initialize a zero byte to accumulate additions (xors)
+            newByte = BitVector.BitVector(intVal = 0, size = 8)
+            for saByte, factor in zip(saCol, invGfRow):
+                # for each element in the state array column, and each 
+                # factor in the gf matrix row, multiply them, and accumulate
+                # onto newByte.
+                newByte = newByte ^ gf_mult(saByte, factor)
+            # append it to the new column.
+            newCol.append(newByte);
+        # append mixed column to newsa
+        newsa.append(newCol)
+    # end of for loop
+    return newsa
   
 def encrypt(hex_key, hex_plaintext):
     ''' perform AES encryption using 128-bit hex_key on 128-bit plaintext 
