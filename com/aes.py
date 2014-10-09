@@ -2,6 +2,8 @@
 
 ''' Compiler/OS Used: cygwin Win7
     Sources Used: BitVector documentation, NIST AES-spec appendix for tests
+
+    Written by Giovanni Scialdone and Leo Sunpeng Li
 '''
 
 import sys
