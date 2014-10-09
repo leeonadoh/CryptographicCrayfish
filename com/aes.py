@@ -165,7 +165,6 @@ def init_state_array(bv):
         output.append(col)
     return output
 
-
 def sub_key_bytes(key_word):
     ''' Iterate through round-key key_word (4-byte word) performing sbox
         substitutions, returning the transformed round-key key_word '''
@@ -175,7 +174,6 @@ def sub_key_bytes(key_word):
                 sbox_lookup(key_word[16:24]) + sbox_lookup(key_word[24:32])
     return subbedKey
     
-
 def init_key_schedule(key_bv):
     '''key_bv is the 128-bit input key value represented as a BitVector; return
        key_schedule as an array of (4*(1+#rounds)) 32-bit BitVector words '''
