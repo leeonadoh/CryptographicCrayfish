@@ -453,11 +453,61 @@ def test_encrypt():
     actual = AES.encrypt(k, p)
     assert actual == c
 
+    p = "6bc1bee22e409f96e93d7e117393172a"
+    k = "2b7e151628aed2a6abf7158809cf4f3c"
+    c = "3ad77bb40d7a3660a89ecaf32466ef97"
+    actual = AES.encrypt(k, p)
+    assert actual == c
+
+    p = "ae2d8a571e03ac9c9eb76fac45af8e51"
+    k = "2b7e151628aed2a6abf7158809cf4f3c"
+    c = "f5d3d58503b9699de785895a96fdbaaf"
+    actual = AES.encrypt(k, p)
+    assert actual == c
+    
+    p = "30c81c46a35ce411e5fbc1191a0a52ef"
+    k = "2b7e151628aed2a6abf7158809cf4f3c"
+    c = "43b1cd7f598ece23881b00e3ed030688"
+    actual = AES.encrypt(k, p)
+    assert actual == c
+
+    p = "f69f2445df4f9b17ad2b417be66c3710"
+    k = "2b7e151628aed2a6abf7158809cf4f3c"
+    c = "7b0c785e27e8ad3f8223207104725dd4"
+    actual = AES.encrypt(k, p)
+    assert actual == c
+    
 
 def test_decrypt():
     ''' perform AES decryption using 128-bit hex_key on 128-bit ciphertext
            hex_ciphertext, where both key and ciphertext values are expressed
     in hexadecimal string notation. '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 14-15
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 14-15
-    assert False
+    p = "00112233445566778899aabbccddeeff"
+    k = "000102030405060708090a0b0c0d0e0f"
+    c = "69c4e0d86a7b0430d8cdb78070b4c55a"
+    actual = AES.decrypt(k, c)
+    assert actual == p
+
+    p = "6bc1bee22e409f96e93d7e117393172a"
+    k = "2b7e151628aed2a6abf7158809cf4f3c"
+    c = "3ad77bb40d7a3660a89ecaf32466ef97"
+    actual = AES.decrypt(k, c)
+    assert actual == p
+
+    p = "ae2d8a571e03ac9c9eb76fac45af8e51"
+    k = "2b7e151628aed2a6abf7158809cf4f3c"
+    c = "f5d3d58503b9699de785895a96fdbaaf"
+    actual = AES.decrypt(k, c)
+    assert actual == p
+    
+    p = "30c81c46a35ce411e5fbc1191a0a52ef"
+    k = "2b7e151628aed2a6abf7158809cf4f3c"
+    c = "43b1cd7f598ece23881b00e3ed030688"
+    actual = AES.decrypt(k, c)
+    assert actual == p
+
+    p = "f69f2445df4f9b17ad2b417be66c3710"
+    k = "2b7e151628aed2a6abf7158809cf4f3c"
+    c = "7b0c785e27e8ad3f8223207104725dd4"
+    actual = AES.decrypt(k, c)
+    assert actual == p

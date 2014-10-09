@@ -80,7 +80,7 @@ def bv_hex_str(bv):
     cstr = ""
     for n in range((len(bv)/8)):
         c = chr(bv[n*8:n*8+8].intValue())
-    cstr += c
+        cstr += c
     return binascii.hexlify(cstr)
 
 def print_state(state_array, label = " "):
@@ -90,12 +90,12 @@ def print_state(state_array, label = " "):
         for row in col:
             psa += bv_hex_str(row)
         print psa,
-        print label,
+    print label,
 
 def printKeySchedule(schedule):
     total = ""
     for i in range(len(schedule)):
-        total += bv_hex_str(schedule[i]) + " ";
+        total += bv_hex_str(schedule[i]);
         if i % 4 == 3:
             total += "\n"
     return total[0:-1]
@@ -124,6 +124,33 @@ def key_to_bv(hex_key):
         byte_bv = BitVector.BitVector(intVal=ord(byte), size=8) # one byte to add to BitVector
         key_bv += byte_bv # catenate new BitVector byte onto return value
     return key_bv
+
+def mixColGeneric(sa, matrix):
+    ''' Generic algorithm for mix columns, taking in the appropriate gf matrix
+    '''
+    # ADD YOUR CODE HERE - SEE LEC SLIDES 33-35   
+    newsa = []  # result state-array
+
+    for saCol in sa:
+        # for each column in state array, multiply it with gf matrix.
+        # initialize a list containing the new bytes for the column.
+        newCol = []
+        for gfRow in matrix:
+            # initialize a zero byte to accumulate additions (XOR)
+            newByte = BitVector.BitVector(intVal = 0, size = 8)
+            for saByte, factor in zip(saCol, gfRow):
+                # for each element in the state array column, and each 
+                # factor in the gf matrix row, multiply them, and accumulate
+                # onto newByte.
+                newByte = newByte ^ gf_mult(saByte, factor)
+            # append it to the new column.
+            newCol.append(newByte);
+        # append mixed column to newsa
+        newsa.append(newCol)
+    # end of for loop
+    return newsa
+
+''' END of HELPER functions '''
 
 def init_state_array(bv):
     ''' Return a state array corresponding to 128-bit BitVector param bv,
@@ -297,31 +324,6 @@ def gf_mult(bv, factor):
         bvFac[0] = 0
     return prod
 
-def mixColGeneric(sa, matrix):
-    ''' Generic algorithm for mix columns, taking in the appropriate gf matrix
-    '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 33-35   
-    newsa = []  # result state-array
-
-    for saCol in sa:
-        # for each column in state array, multiply it with gf matrix.
-        # initialize a list containing the new bytes for the column.
-        newCol = []
-        for gfRow in matrix:
-            # initialize a zero byte to accumulate additions (XOR)
-            newByte = BitVector.BitVector(intVal = 0, size = 8)
-            for saByte, factor in zip(saCol, gfRow):
-                # for each element in the state array column, and each 
-                # factor in the gf matrix row, multiply them, and accumulate
-                # onto newByte.
-                newByte = newByte ^ gf_mult(saByte, factor)
-            # append it to the new column.
-            newCol.append(newByte);
-        # append mixed column to newsa
-        newsa.append(newCol)
-    # end of for loop
-    return newsa
-
 def mix_columns(sa):
     ''' Mix columns on state array sa to return new state array '''
     return mixColGeneric(sa, gfMatrix)
@@ -337,40 +339,32 @@ def encrypt(hex_key, hex_plaintext):
     # Initialize state array and key schedule
     stateArr = init_state_array(key_to_bv(hex_plaintext))
     keySched = init_key_schedule(key_to_bv(hex_key))
-    # 0th round. Add round key.
+
     roundKey = keySched[0:4]
-    stateArr = add_round_key(stateArr, roundKey)
-    # Rounds 1 to 9 inclusive.
-    for i in range(1, 10):
-        roundKey = keySched[i * 4 : (i + 1) * 4]
+    for i in range(1, 11):
+        stateArr = add_round_key(stateArr, roundKey)
         stateArr = sub_bytes(stateArr)
         stateArr = shift_rows(stateArr)
-        stateArr = mix_columns(stateArr)
-        stateArr = add_round_key(stateArr, roundKey)
-    # Round 10
-    roundKey = keySched[40:44]
-    stateArr = sub_bytes(stateArr)
-    stateArr = shift_rows(stateArr)
+        if (i != 10):
+            stateArr = mix_columns(stateArr)
+        roundKey = keySched[i * 4 : (i + 1) * 4]
     stateArr = add_round_key(stateArr, roundKey)
-
     return state_str(stateArr)
-
 
 def decrypt(hex_key, hex_ciphertext):
     ''' perform AES decryption using 128-bit hex_key on 128-bit ciphertext
         hex_ciphertext, where both key and ciphertext values are expressed
     in hexadecimal string notation. '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 14-15
-    pass
+    stateArr = init_state_array(key_to_bv(hex_ciphertext))
+    keySched = init_key_schedule(key_to_bv(hex_key))
 
-if __name__ == "__main__":
-    # test key from AES-Spec Appendix B
-    NIST_test_key = '2b7e151628aed2a6abf7158809cf4f3c'
-    
-    # plaintext test-value from AES-Spec Appendix B 
-    NIST_test_plaintext = '3243f6a8885a308d313198a2e0370734'
-    
-    # input-to-round-1 value from AES-Spec Appendix B 
-    NIST_input_round_1 = '193de3bea0f4e22b9ac68d2ae9f84808'
-    x = key_to_bv(NIST_test_key)
-    key_schedule = init_key_schedule(x)    
+    roundKey = keySched[-4:]
+    stateArr = add_round_key(stateArr, roundKey)
+    for i in range(1, 11):
+        if (i != 1):
+            stateArr = inv_mix_columns(stateArr)
+        stateArr = inv_shift_rows(stateArr)
+        stateArr = inv_sub_bytes(stateArr)
+        roundKey = keySched[-(i + 1) * 4 :  -i * 4]
+        stateArr = add_round_key(stateArr, roundKey)
+    return state_str(stateArr)
