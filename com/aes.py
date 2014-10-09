@@ -89,8 +89,16 @@ def print_state(state_array, label = " "):
         psa = ""
         for row in col:
             psa += bv_hex_str(row)
-            print psa,
-    print label
+        print psa,
+        print label,
+
+def printKeySchedule(schedule):
+    total = ""
+    for i in range(len(schedule)):
+        total += bv_hex_str(schedule[i]) + " ";
+        if i % 4 == 3:
+            total += "\n"
+    return total[0:-1]
 
 def state_str(state_array):
     ''' DEBUG HELPER to convert a state_array value to a hex string '''
@@ -289,17 +297,18 @@ def gf_mult(bv, factor):
         bvFac[0] = 0
     return prod
 
-def mix_columns(sa):
-    ''' Mix columns on state array sa to return new state array '''
+def mixColGeneric(sa, matrix):
+    ''' Generic algorithm for mix columns, taking in the appropriate gf matrix
+    '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 33-35   
     newsa = []  # result state-array
 
     for saCol in sa:
-        # for each column in state array, mutiply it with gf matrix.
-        # initalize a list containing the new bytes for the column.
+        # for each column in state array, multiply it with gf matrix.
+        # initialize a list containing the new bytes for the column.
         newCol = []
-        for gfRow in gfMatrix:
-            # initialize a zero byte to accumulate additions (xors)
+        for gfRow in matrix:
+            # initialize a zero byte to accumulate additions (XOR)
             newByte = BitVector.BitVector(intVal = 0, size = 8)
             for saByte, factor in zip(saCol, gfRow):
                 # for each element in the state array column, and each 
@@ -313,36 +322,39 @@ def mix_columns(sa):
     # end of for loop
     return newsa
 
+def mix_columns(sa):
+    ''' Mix columns on state array sa to return new state array '''
+    return mixColGeneric(sa, gfMatrix)
+
 def inv_mix_columns(sa):
     ''' Inverse mix columns on state array sa to return new state array '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDE 36  
-    newsa = []  # result state-array
-
-    for saCol in sa:
-        # for each column in state array, mutiply it with gf matrix.
-        # initalize a list containing the new bytes for the column.
-        newCol = []
-        for invGfRow in invGfMatrix:
-            # initialize a zero byte to accumulate additions (xors)
-            newByte = BitVector.BitVector(intVal = 0, size = 8)
-            for saByte, factor in zip(saCol, invGfRow):
-                # for each element in the state array column, and each 
-                # factor in the gf matrix row, multiply them, and accumulate
-                # onto newByte.
-                newByte = newByte ^ gf_mult(saByte, factor)
-            # append it to the new column.
-            newCol.append(newByte);
-        # append mixed column to newsa
-        newsa.append(newCol)
-    # end of for loop
-    return newsa
+    return mixColGeneric(sa, invGfMatrix)
   
 def encrypt(hex_key, hex_plaintext):
     ''' perform AES encryption using 128-bit hex_key on 128-bit plaintext 
         hex_plaintext, where both key and plaintext values are expressed
     in hexadecimal string notation. '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 14-15
-    pass
+    # Initialize state array and key schedule
+    stateArr = init_state_array(key_to_bv(hex_plaintext))
+    keySched = init_key_schedule(key_to_bv(hex_key))
+    # 0th round. Add round key.
+    roundKey = keySched[0:4]
+    stateArr = add_round_key(stateArr, roundKey)
+    # Rounds 1 to 9 inclusive.
+    for i in range(1, 10):
+        roundKey = keySched[i * 4 : (i + 1) * 4]
+        stateArr = sub_bytes(stateArr)
+        stateArr = shift_rows(stateArr)
+        stateArr = mix_columns(stateArr)
+        stateArr = add_round_key(stateArr, roundKey)
+    # Round 10
+    roundKey = keySched[40:44]
+    stateArr = sub_bytes(stateArr)
+    stateArr = shift_rows(stateArr)
+    stateArr = add_round_key(stateArr, roundKey)
+
+    return state_str(stateArr)
+
 
 def decrypt(hex_key, hex_ciphertext):
     ''' perform AES decryption using 128-bit hex_key on 128-bit ciphertext
@@ -350,7 +362,6 @@ def decrypt(hex_key, hex_ciphertext):
     in hexadecimal string notation. '''
     # ADD YOUR CODE HERE - SEE LEC SLIDES 14-15
     pass
-
 
 if __name__ == "__main__":
     # test key from AES-Spec Appendix B

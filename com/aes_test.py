@@ -12,16 +12,6 @@ def newBV(val, length=8):
         return BitVector.BitVector(intVal = val, size = length)
     return None
 
-def printKeySchedule(schedule):
-    total = ""
-    for i in range(len(schedule)):
-        total += AES.bv_hex_str(schedule[i]) + " ";
-        if i % 4 == 3:
-            total += "\n"
-    return total
-# Helper function end.
-
-
 def test_sub_key_bytes():
     ''' Iterate through round-key key_word (4-byte word) performing sbox
         substitutions, returning the transformed round-key key_word '''
@@ -426,7 +416,9 @@ def test_inv_mix_columns():
                 [newBV(0x20), newBV(0x0b), newBV(0x63), newBV(0x33)], \
                 [newBV(0x53), newBV(0xc0), newBV(0xcf), newBV(0x7c)], \
                 [newBV(0xbb), newBV(0x25), newBV(0xd0), newBV(0xdc)]]
-    actual = AES.mix_columns(stateArr)
+    actual = AES.inv_mix_columns(stateArr)
+    AES.print_state(expected)
+    AES.print_state(actual)
     assert expected == actual
 
     expected = [[newBV(0x52), newBV(0xa4), newBV(0xc8), newBV(0x94)], \
@@ -437,7 +429,7 @@ def test_inv_mix_columns():
                 [newBV(0x60), newBV(0x31), newBV(0x38), newBV(0xbf)], \
                 [newBV(0x6f), newBV(0xc0), newBV(0x10), newBV(0x6b)], \
                 [newBV(0x5e), newBV(0xb3), newBV(0x13), newBV(0x01)]]
-    actual = AES.mix_columns(stateArr)
+    actual = AES.inv_mix_columns(stateArr)
     assert expected == actual
     
     expected = [[newBV(0xe1), newBV(0xfb), newBV(0x96), newBV(0x7c)], \
@@ -455,8 +447,12 @@ def test_encrypt():
     ''' perform AES encryption using 128-bit hex_key on 128-bit plaintext 
         hex_plaintext, where both key and plaintext values are expressed
     in hexadecimal string notation. '''
-    # ADD YOUR CODE HERE - SEE LEC SLIDES 14-15
-    assert False
+    p = "00112233445566778899aabbccddeeff"
+    k = "000102030405060708090a0b0c0d0e0f"
+    c = "69c4e0d86a7b0430d8cdb78070b4c55a"
+    actual = AES.encrypt(k, p)
+    assert actual == c
+
 
 def test_decrypt():
     ''' perform AES decryption using 128-bit hex_key on 128-bit ciphertext
