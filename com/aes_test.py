@@ -5,6 +5,10 @@ import BitVector
 import copy 
 import nose
 
+''' Written by Giovanni Scialdone and Leo Sunpeng Li.
+    Since we are partnered up, we did all work packages (1, 2, 3 & 4)
+'''
+
 #Some helper functions
 def newBV(val, length=8):
     if type(val) is str:
