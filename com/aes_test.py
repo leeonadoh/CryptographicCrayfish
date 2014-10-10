@@ -3,6 +3,7 @@
 import aes as AES
 import BitVector
 import copy 
+import nose
 
 #Some helper functions
 def newBV(val, length=8):
@@ -511,3 +512,7 @@ def test_decrypt():
     c = "7b0c785e27e8ad3f8223207104725dd4"
     actual = AES.decrypt(k, c)
     assert actual == p
+
+
+if __name__ == "__main__":
+    nose.main();
