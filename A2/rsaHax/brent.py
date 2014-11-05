@@ -1,5 +1,11 @@
 from random import randint
 
+y,c,m = 1,1,1
+g,r,q = 1,1,1
+k = 0
+x = 0
+ys = 0
+
 def gcd(a,b):
     """ the euclidean algorithm """
     while a:
@@ -7,10 +13,20 @@ def gcd(a,b):
     return b
 
 def brent(N):
+    global y
+    global c
+    global m 
+    global g
+    global r
+    global q
+    global k
+    global x
+    global ys
+    m = randint(1, N-1)
+    c = randint(1, N-1)
+    y = randint(1, N-1)
     if N%2==0:
-            return 2
-    y,c,m = randint(1, N-1),randint(1, N-1),randint(1, N-1)
-    g,r,q = 1,1,1
+        return 2
     while g==1:            
         x = y
         for i in range(r):
