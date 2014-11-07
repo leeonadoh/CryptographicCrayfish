@@ -1,0 +1,41 @@
+<html>
+<head>
+<title>Secrets of Happiness</title>
+</head>
+<body>
+
+
+<h3>A2 Q4, by Giovanni Scialdone & Leo (Sunpeng) Li</h3>
+
+<h1>Secrets of Happiness</h1>
+<ul>
+<li>'It is not easy to find happiness in ourselves, and it is not possible to find it elsewhere.'</li>
+<li>'All happiness depends on a leisurely breakfast.'</li>
+<li>'If you want happiness for an hour, take a nap.<br/> If you want happiness for a day, go fishing.<br/> If you want happiness for a year, inherit a fortune.<br/> If you want happiness for a lifetime, help someone else.'</li>
+<li>'When one door of happiness closes, another opens, but often we look so long at the closed door that we do not see the one that has been opened for us.'</li>
+<li>'Happiness is when what you think, what you say, and what you do are in harmony.'</li>
+<li>'To be without some of the things you want is an indispensable part of happiness'</li>
+<li>'Optimism is a happiness magnet. If you stay positive, good things and good people will be drawn to you.'</li>
+<li>'Ice cream is happiness condensed.'</li>
+</ul>
+
+<h3>P and Q values</h3>
+<div>p=8194124624414046878093826113</div>
+<div>q=15543364719846102734035905265021007874527909072857707530407929290687101099950235380124854710034333308285660202980757696503925683873746491877865507719899027251207102262278680571817169261263452242836721127096300509656928177929591710741117876178047883330343700515792044255540432173197</div>
+<h3>Reasoning</h3>
+<p>
+	By looking at the public exponent value e = 65537, vulnerabilities introduced by small public exponents can be eliminated. 
+	<br><br>
+	Small private exponent vulnerabilities can also be eliminated, since e*d mod phi(n) = 1 implies e*d must be at least as big as phi(n) + 1. Since n is a multiple of two primes (p, q), and n is huge, phi(n) = (p-1)(q-1) will also be huge. Therefore, phi(n) / e = d will not be as big as phi(n), but still huge in comparison with e.
+	<br><br>
+	Common modulus vulnerability was eliminated by running gcd(n1, n2) = 1, where n1 is the modulus for mathlab port 41414, and n2 for mathlab port 28004. This means they do not share a common prime factor.
+	<br><br>
+	This leave two other "semi brute force" approaches: 
+	<ol>
+		<li>Start testing primes from the square root of modulus n to abuse the balanced factors vulnerability, or </li>
+		<li>Run a prime factoring algorithm to abuse the unbalanced factors vulnerability. </li>
+	</ol>
+	We eliminated 1 by a stroke of luck, where our algorithm for 2 successfully factorized n before we could code anything for 1. We ran both Pollard and Brent's rho algorithm, in addition to a combination of rho + ecm (elliptic curve factorization method), where rho + ecm finally won the race. 
+</p
+</body>
+</html>
